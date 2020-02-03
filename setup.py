@@ -16,7 +16,7 @@ setup(
     long_description_content_type="text/markdown",
     author="Jim Ramsay",
     author_email="i.am@jimramsay.com",
-    url="https://github.com/lack/soundcraft_utils",
+    url="https://github.com/lack/soundcraft-utils",
     packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

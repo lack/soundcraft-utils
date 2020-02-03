@@ -20,7 +20,7 @@ Installation
 ------------
 
 ```bash
-sudo pip install soundcraft
+sudo pip install soundcraft-utils
 ```
 
 Usage
