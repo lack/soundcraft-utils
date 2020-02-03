@@ -1,0 +1,28 @@
+{
+    "_meta": {
+        "hash": {
+            "sha256": "f44d32257c68b971cc5cccfaf84d2acdd16b1dd5b66c631f9a2c3fe6ae585eb3"
+        },
+        "pipfile-spec": 6,
+        "requires": {
+            "python_version": "3.7"
+        },
+        "sources": [
+            {
+                "name": "pypi",
+                "url": "https://pypi.python.org/simple",
+                "verify_ssl": true
+            }
+        ]
+    },
+    "default": {
+        "pyusb": {
+            "hashes": [
+                "sha256:4e9b72cc4a4205ca64fbf1f3fff39a335512166c151ad103e55c8223ac147362"
+            ],
+            "index": "pypi",
+            "version": "==1.0.2"
+        }
+    },
+    "develop": {}
+}
