@@ -5,7 +5,7 @@ import json
 import os
 
 class NotepadBase:
-    def __init__(self, idProduct, stateDir = '/var/lib/soundcraft-utils'):
+    def __init__(self, idProduct, mappableChannel, stateDir='/var/lib/soundcraft-utils', nonmappableChannels={}):
         self.dev = usb.core.find(idVendor=0x05fc, idProduct=idProduct)
         major = self.dev.bcdDevice >> 8
         minor = self.dev.bcdDevice & 0xff
@@ -15,6 +15,8 @@ class NotepadBase:
         self.stateFile = f"{stateDir}/{self.product}.state"
         self.state = {}
         self.loadState()
+        self.mappableChannel = mappableChannel
+        self.nonmappableChannels = nonmappableChannels
 
     def found(self):
         return self.dev is not None
@@ -81,35 +83,35 @@ class NotepadBase:
 
 class Notepad_12fx(NotepadBase):
     def __init__(self):
-        super().__init__(0x0032)
+        super().__init__(idProduct=0x0032, mappableChannel="3&4", nonmappableChannels={"1&2": "INPUT_1_2"})
 
     class Channels(enum.IntEnum):
-        INPUT_3_4 = 0
-        INPUT_5_6 = 1
-        INPUT_7_8 = 2
-        MASTER_L_R  = 3
+        INPUT_3_4  = 0
+        INPUT_5_6  = 1
+        INPUT_7_8  = 2
+        MASTER_L_R = 3
 
 class Notepad_8fx(NotepadBase):
     def __init__(self):
         # TODO: What is the idProduct of the Notepad 8fx?
-        super().__init__(self, 0x0000)
+        super().__init__(idProduct=0x0000, mappableChannel="1&2")
 
     class Channels(enum.IntEnum):
         # TODO: Confirm this mapping on real hardware
-        INPUT_1_2 = 0
-        INPUT_3_4 = 1
-        INPUT_5_6 = 2
-        MASTER_L_R  = 3
+        INPUT_1_2  = 0
+        INPUT_3_4  = 1
+        INPUT_5_6  = 2
+        MASTER_L_R = 3
 
 class Notepad_5(NotepadBase):
     def __init__(self):
         # TODO: What is the idProduct of the Notepad 5?
-        super().__init__(self, 0x0000)
+        super().__init__(idProduct=0x0000, mappableChannel="1&2")
 
     class Channels(enum.IntEnum):
         # TODO: Confirm this mapping on real hardware
-        INPUT_1_2 = 0
-        INPUT_2_3 = 1
-        INPUT_4_5 = 2
-        MASTER_L_R  = 3
+        INPUT_1_2  = 0
+        INPUT_2_3  = 1
+        INPUT_4_5  = 2
+        MASTER_L_R = 3
 
