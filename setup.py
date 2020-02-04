@@ -30,7 +30,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "soundcraft_ctl=soundcraft:main",
+            "soundcraft_ctl=soundcraft.cli:main",
         ],
     },
 )
