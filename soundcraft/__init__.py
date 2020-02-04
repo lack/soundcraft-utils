@@ -14,7 +14,8 @@ def show(dev):
     print(f"Detected a {dev.name()}")
     print("Available channels:")
     for channel in dev.Channels:
-        print(f"  {channel} => {channel.name}")
+        selected = "*" if dev.selectedChannel() == channel else " "
+        print(f"{selected} {channel} => {channel.name}")
 
 def main():
     parser = argparse.ArgumentParser()

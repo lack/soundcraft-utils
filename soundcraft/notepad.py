@@ -1,14 +1,20 @@
 import usb.core
 import array
 import enum
+import json
+import os
 
 class NotepadBase:
-    def __init__(self, idProduct):
+    def __init__(self, idProduct, stateDir = '/var/lib/soundcraft-utils'):
         self.dev = usb.core.find(idVendor=0x05fc, idProduct=idProduct)
         major = self.dev.bcdDevice >> 8
         minor = self.dev.bcdDevice & 0xff
         self.fwVersion = f"{major}.{minor}"
         self.product = usb.util.get_string(self.dev, self.dev.iProduct)
+        self.stateDir = stateDir
+        self.stateFile = f"{stateDir}/{self.product}.state"
+        self.state = {}
+        self.loadState()
 
     def found(self):
         return self.dev is not None
@@ -23,6 +29,13 @@ class NotepadBase:
                  channel, 0x00, 0x00, 0x00])
         print(f"Sending {message}")
         result = self.dev.ctrl_transfer(0x40, 16, 0, 0, message)
+        self.state['channel'] = channel
+        self.saveState()
+
+    def selectedChannel(self):
+        if 'channel' not in self.state:
+            return None
+        return self.Channels(self.state['channel'])
 
     def fetchInfo(self):
         assert self.found()
@@ -48,6 +61,23 @@ class NotepadBase:
                     if string in c.name:
                         return c
         return None
+
+    def saveState(self):
+        try:
+            os.makedirs(self.stateDir, exist_ok=True)
+            with open(self.stateFile, "w") as fh:
+                fh.write(json.dumps(self.state,
+                    sort_keys=True,
+                    indent=4))
+        except Exception as e:
+            print(f"Warning: Could not write state file: {e}")
+
+    def loadState(self):
+        try:
+            with open(self.stateFile, "r") as fh:
+                self.state = json.loads(fh.read())
+        except:
+            pass
 
 class Notepad_12fx(NotepadBase):
     def __init__(self):
