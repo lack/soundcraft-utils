@@ -5,6 +5,10 @@ import enum
 class NotepadBase:
     def __init__(self, idProduct):
         self.dev = usb.core.find(idVendor=0x05fc, idProduct=idProduct)
+        major = self.dev.bcdDevice >> 8
+        minor = self.dev.bcdDevice & 0xff
+        self.fwVersion = f"{major}.{minor}"
+        self.product = usb.util.get_string(self.dev, self.dev.iProduct)
 
     def found(self):
         return self.dev is not None
@@ -29,7 +33,7 @@ class NotepadBase:
         self.info2 = self.dev.ctrl_transfer(0xa1, 2, 0x0100, 0x2900, 256)
 
     def name(self):
-        return self.__class__.__name__
+        return f"{self.product} (fw v{self.fwVersion})"
 
     def parseChannel(self, string):
         channels = self.Channels
