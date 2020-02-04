@@ -8,7 +8,15 @@ def show(dev):
         print(f"capture_{usb} <- {channel}")
         print("-"*30)
     for channel in dev.Channels:
-        selected = f"capture_{dev.mappableChannel} <-" if dev.selectedChannel() == channel else " "*14
+        if dev.selectedChannel() is None:
+            if channel == 0:
+                selected = f"capture_{dev.mappableChannel} ??"
+            else:
+                selected = f"{' '*12}??"
+        elif dev.selectedChannel() == channel:
+            selected = f"capture_{dev.mappableChannel} <-"
+        else:
+            selected = " "*14
         print(f"{selected} {channel.name: <10} ({channel})")
     print("-"*30)
 
