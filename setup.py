@@ -27,10 +27,12 @@ setup(
     python_requires='>=3.6',
     install_requires=[
         "pyusb",
+        "pydbus",
     ],
     entry_points={
         "console_scripts": [
             "soundcraft_ctl=soundcraft.cli:main",
+            "soundcraft_dbus_service=soundcraft.dbus:service",
         ],
     },
 )

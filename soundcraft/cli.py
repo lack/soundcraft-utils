@@ -1,6 +1,13 @@
 import argparse
 import sys
-from soundcraft.notepad import autodetect
+import importlib
+
+def autodetect(dbus=True):
+    if dbus:
+        source = importlib.import_module("soundcraft.dbus")
+    else:
+        source = importlib.import_module("soundcraft.notepad")
+    return source.autodetect()
 
 def show(dev):
     print("-"*30)
@@ -24,11 +31,12 @@ def show(dev):
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--no-dbus", help="Use direct USB device access instead of DBUS service access", action="store_true")
     parser.add_argument("-l", "--list", help="List the available source routing options", action="store_true")
     parser.add_argument("-s", "--set", help="Set the specified source to route to the USB capture input")
     args = parser.parse_args()
     if args.list or args.set:
-        dev = autodetect()
+        dev = autodetect(dbus=not args.no_dbus)
         print(f"Detected a {dev.name}")
         if args.set:
             try:
