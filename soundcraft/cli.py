@@ -1,43 +1,45 @@
 import argparse
 import sys
-from . import autodetect
+from soundcraft.notepad import autodetect
 
 def show(dev):
     print("-"*30)
-    for (usb, channel) in dev.nonmappableChannels.items():
-        print(f"capture_{usb} <- {channel}")
+    for (target, source) in dev.fixedRouting.items():
+        print(f"{target} <- {source}")
         print("-"*30)
-    for channel in dev.Channels:
-        if dev.selectedChannel() is None:
-            if channel == 0:
-                selected = f"capture_{dev.mappableChannel} ??"
+    first = True
+    for source in dev.sources:
+        if dev.routingSource is None or dev.routingSource == 'UNKNOWN':
+            if first:
+                selected = f"{dev.routingTarget} ??"
+                first = False
             else:
                 selected = f"{' '*12}??"
-        elif dev.selectedChannel() == channel:
-            selected = f"capture_{dev.mappableChannel} <-"
+        elif dev.routingSource == source:
+            selected = f"{dev.routingTarget} <-"
         else:
             selected = " "*14
-        print(f"{selected} {channel.name: <10} ({channel})")
+        print(f"{selected} {source}")
     print("-"*30)
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-l", "--list", help="List the available channel selection options", action="store_true")
-    parser.add_argument("-s", "--set", help="Set the USB input mappi g to the specified input")
+    parser.add_argument("-l", "--list", help="List the available source routing options", action="store_true")
+    parser.add_argument("-s", "--set", help="Set the specified source to route to the USB capture input")
     args = parser.parse_args()
-    if args.list: 
+    if args.list or args.set:
         dev = autodetect()
-        print(f"Detected a {dev.name()}")
-        show(dev)
-    elif args.set:
-        dev = autodetect()
-        print(f"Detected a {dev.name()}")
-        channel = dev.parseChannel(args.set)
-        if channel is None:
-            print(f"Unrecognised input choice {args.set}")
-            print(f"Run -l to list the valid choices")
-            sys.exit(1)
-        dev.switchChannel(channel)
+        print(f"Detected a {dev.name}")
+        if args.set:
+            try:
+                dev.routingSource = args.set
+            except ValueError:
+                print(f"Unrecognised input choice {args.set}")
+                print(f"Run -l to list the valid choices")
+                sys.exit(1)
         show(dev)
     else:
         parser.print_help()
+
+if __name__ == '__main__':
+    main()
