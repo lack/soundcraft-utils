@@ -7,6 +7,10 @@ except ModuleNotFoundError:
     print("\nThe PyGI library must be installed from your distribution; usually called python-gi, python-gobject, or pygobject\n")
     raise
 from pydbus import SystemBus
+import argparse
+import os.path
+import sys
+from string import Template
 
 class DeviceList(object):
     """
@@ -73,6 +77,54 @@ def service():
     loop = GLib.MainLoop()
     loop.run()
 
+def findDbusFiles():
+    result = {}
+    modulepaths = soundcraft.__path__
+    for path in modulepaths:
+        dbusdatapath = os.path.join(path, 'data/dbus-1')
+        result[dbusdatapath] = []
+        for path, dirs, files in os.walk(dbusdatapath):
+            if not files:
+                continue
+            for fname in files:
+                relative = os.path.relpath(os.path.join(path, fname), start=dbusdatapath)
+                result[dbusdatapath].append(relative)
+    return result
+
+def serviceExePath():
+    exename = sys.argv[0]
+    exename = os.path.abspath(exename)
+    if exename.endswith(".py"):
+        raise ValueError("Running setup out of a module-based execution is not supported")
+    return exename
+
+def setup(cfgroot="/usr/share/dbus-1"):
+    templateData = {
+        'dbus_service_bin': serviceExePath()
+    }
+    sources = findDbusFiles()
+    for (srcpath, files) in sources.items():
+        for fname in files:
+            src = os.path.join(srcpath, fname)
+            dst = os.path.join(cfgroot, fname)
+            print(f"Installing {src} -> {dst}")
+            with open(src, "r") as srcfile:
+                srcTemplate = Template(srcfile.read())
+                with open(dst, "w") as dstfile:
+                    dstfile.write(srcTemplate.substitute(templateData))
+
 def autodetect():
     bus = SystemBus()
     return bus.get("soundcraft.utils.notepad", "/soundcraft/utils/notepad/0")
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--setup", help="Set up the dbus configuration in /usr/share/dbus-1 (Must be run as root)", action="store_true")
+    args = parser.parse_args()
+    if args.setup:
+        setup()
+    else:
+        service()
+
+if __name__ == '__main__':
+    main()

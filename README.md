@@ -19,8 +19,14 @@ Supported models:
 Installation
 ------------
 
+Install from pip:
 ```bash
 sudo pip install soundcraft-utils
+```
+
+Set up the DBUS service so it can be auto-started by root as needed:
+```bash
+sudo soundcraft_dbus_service --setup
 ```
 
 Usage
@@ -33,9 +39,8 @@ soundcraft_ctl -l
 
 Set channel routing:
 ```bash
-sudo soundcraft_ctl -s <number>
+soundcraft_ctl -s <number>
 ```
-(Requires write access to the USB device)
 
 TODO
 ----
@@ -46,3 +51,4 @@ TODO
     - Notepad-5 likewise, same constraints
 - Auto-duck feature
 - Firmware upgrade
+- GUI?  People like those, right?

@@ -1,0 +1,5 @@
+[D-BUS Service]
+Name=soundcraft.utils.notepad
+Exec=$dbus_service_bin
+User=root
+

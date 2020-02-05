@@ -32,7 +32,10 @@ setup(
     entry_points={
         "console_scripts": [
             "soundcraft_ctl=soundcraft.cli:main",
-            "soundcraft_dbus_service=soundcraft.dbus:service",
+            "soundcraft_dbus_service=soundcraft.dbus:main",
         ],
+    },
+    package_data={
+        'soundcraft': ['data/dbus-1/system.d/*', 'data/dbus-1/system-services/*'],
     },
 )
