@@ -16,35 +16,66 @@ software control of the USB capture channel routing to Linux users.
 Supported models:
 - Notepad-12FX
 
+Prerequisites
+-------------
+
+The dbus service relies on [PyGObject](https://pygobject.readthedocs.io/en/latest/index.html)
+which is not available via pypi without a lot of dev libraries for
+it to compile against.  It is usually easier to install separately
+using your distribution's package installation tools.  Under Ubuntu,
+the following should work:
+
+```bash
+sudo apt install python3-gi
+```
+
 Installation
 ------------
 
 Install from pip:
+
 ```bash
 sudo pip install soundcraft-utils
 ```
 
-Set up the DBUS service so it can be auto-started by root as needed:
+It is not recommended to use `--user` mode and install this
+system-wide so that the dbus service auto-start can reliably find the
+right python libs.
+
+Set up the DBUS service so it can access the system bus and be
+auto-started on demand:
+
 ```bash
 sudo soundcraft_dbus_service --setup
 ```
+
+The dbus service will run as root, providing access to the underlying
+USB device so the `soundcraft_ctl` user-facing part can be run by an
+unprivileged account.
 
 Usage
 -----
 
 List possible channel routing choices:
+
 ```bash
-soundcraft_ctl -l
+soundcraft_ctl [--no-dbus] -l
 ```
 
 Set channel routing:
+
 ```bash
-soundcraft_ctl -s <number>
+soundcraft_ctl [--no-dbus] -s <number>
 ```
+
+When using the `--no-dbus`, write access to the underling USB device is
+required. Normally only root can do this, unless you've added some custom
+udev rules.
 
 TODO
 ----
 
+- Polkit restrictions on the dbus service
 - Multiple device support
 - Add additional model support
     - Notepad-8FX should be easy, once I know what the USB idProduct field is (plus I'd need help from someone with a Notepad-8FX for testing)

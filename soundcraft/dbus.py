@@ -1,16 +1,23 @@
+import soundcraft
 import soundcraft.notepad
-from .cli import show
-from . import __version__
-try:
-    from gi.repository import GLib
-except ModuleNotFoundError:
-    print("\nThe PyGI library must be installed from your distribution; usually called python-gi, python-gobject, or pygobject\n")
-    raise
-from pydbus import SystemBus
 import argparse
 import os.path
 import sys
 from string import Template
+try:
+    import gi
+except ModuleNotFoundError:
+    print("\nThe PyGI library must be installed from your distribution; usually called python-gi, python-gobject, or pygobject\n")
+    raise
+gi.require_version('GUdev', '1.0')
+from gi.repository import GLib
+from gi.repository import GUdev
+from pydbus import SystemBus
+
+def objPath(idx):
+    return f"/soundcraft/utils/notepad/{idx}"
+
+BUSNAME='soundcraft.utils.notepad'
 
 class DeviceList(object):
     """
@@ -24,7 +31,7 @@ class DeviceList(object):
     # TODO: Should also be an org.freedesktop.ObjectManager
     @property
     def version(self):
-        return __version__
+        return soundcraft.__version__
 
 class NotepadDbus(object):
     """
@@ -66,16 +73,60 @@ class NotepadDbus(object):
     def routingSource(self, request):
         self._dev.routingSource = request
 
-def service():
-    dev = soundcraft.notepad.autodetect()
-    if dev is None:
-        # TODO: Wait for udev to signal that a device has appeared?
-        raise RuntimeError("No device found")
-    bus = SystemBus()
-    bus.publish("soundcraft.utils.notepad", DeviceList(), ("0", NotepadDbus(dev)))
-    print(f"Presenting {dev.name} on the system bus as \"/soundcraft/utils/notepad/0\"")
-    loop = GLib.MainLoop()
-    loop.run()
+class Service:
+    def __init__(self):
+        self.dev = None
+        self.object = None
+        self.bus = SystemBus()
+        self.busname = self.bus.publish(BUSNAME, DeviceList())
+        self.udev = GUdev.Client(subsystems = ["usb/usb_device"])
+        self.udev.connect('uevent', self.uevent)
+        self.loop = GLib.MainLoop()
+
+    def run(self):
+        self.tryRegister()
+        if not self.hasDevice():
+            print(f"Waiting for one to arrive...")
+        self.loop.run()
+
+    def tryRegister(self):
+        if self.hasDevice():
+            print(f"There is already a {self.dev.name} on the bus at {objPath(0)}")
+            return
+        self.dev = soundcraft.notepad.autodetect()
+        if self.dev is None:
+            print(f"No recognised device was found")
+            return
+        self.object = self.bus.register_object(objPath(0), NotepadDbus(self.dev), None)
+        print(f"Presenting {self.dev.name} on the system bus as {objPath(0)}")
+        return
+
+    def hasDevice(self):
+        return self.object is not None
+
+    def unregister(self):
+        if not self.hasDevice():
+            return
+        print(f"Removed {self.dev.name} AKA {objPath(0)} from the system bus")
+        self.object.unregister()
+        self.object = None
+        self.dev = None
+
+    def uevent(self, observer, action, device):
+        if action == 'add':
+            idVendor = device.get_property('ID_VENDOR_ID')
+            idProduct = device.get_property('ID_PRODUCT_ID')
+            if idVendor == "05fc":
+                print(f"Checking new Soundcraft device ({idVendor}:{idProduct})...")
+                self.tryRegister()
+                if not self.hasDevice():
+                    print(f"Contact the developer for help adding support for your advice")
+        elif action == 'remove':
+            # UDEV adds leading 0s to decimal numbers.  They're not octal.  Why??
+            busnum = int(device.get_property('BUSNUM').lstrip("0"))
+            devnum = int(device.get_property('DEVNUM').lstrip("0"))
+            if busnum == self.dev.dev.bus and devnum == self.dev.dev.address:
+                self.unregister()
 
 def findDbusFiles():
     result = {}
@@ -100,7 +151,8 @@ def serviceExePath():
 
 def setup(cfgroot="/usr/share/dbus-1"):
     templateData = {
-        'dbus_service_bin': serviceExePath()
+        'dbus_service_bin': serviceExePath(),
+        'busname': BUSNAME,
     }
     sources = findDbusFiles()
     for (srcpath, files) in sources.items():
@@ -127,7 +179,8 @@ def main():
     if args.setup:
         setup()
     else:
-        service()
+        service = Service()
+        service.run()
 
 if __name__ == '__main__':
     main()
