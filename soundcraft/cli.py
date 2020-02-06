@@ -1,13 +1,20 @@
 import argparse
 import sys
+import time
 import importlib
 
 def autodetect(dbus=True):
     if dbus:
         source = importlib.import_module("soundcraft.dbus")
+        result = source.autodetect()
+        if result is None:
+            # Wait a bit in case the dbus service just started, then try again:
+            time.sleep(0.25)
+            result = source.autodetect()
+        return result
     else:
         source = importlib.import_module("soundcraft.notepad")
-    return source.autodetect()
+        return source.autodetect()
 
 def show(dev):
     print("-"*30)
