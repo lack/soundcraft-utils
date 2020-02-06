@@ -14,19 +14,17 @@ def show(dev):
     for (target, source) in dev.fixedRouting.items():
         print(f"{target} <- {source}")
         print("-"*30)
-    first = True
-    for source in dev.sources:
+    for (i, source) in enumerate(dev.sources):
         if dev.routingSource is None or dev.routingSource == 'UNKNOWN':
-            if first:
+            if i == 0:
                 selected = f"{dev.routingTarget} ??"
-                first = False
             else:
                 selected = f"{' '*12}??"
         elif dev.routingSource == source:
             selected = f"{dev.routingTarget} <-"
         else:
             selected = " "*14
-        print(f"{selected} {source}")
+        print(f"{selected} {source:<10} [{i}]")
     print("-"*30)
 
 def main():
