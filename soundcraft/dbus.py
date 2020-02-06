@@ -114,8 +114,11 @@ def setup(cfgroot="/usr/share/dbus-1"):
                     dstfile.write(srcTemplate.substitute(templateData))
 
 def autodetect():
-    bus = SystemBus()
-    return bus.get("soundcraft.utils.notepad", "/soundcraft/utils/notepad/0")
+    try:
+        bus = SystemBus()
+        return bus.get(BUSNAME, objPath(0))
+    except KeyError:
+        return None
 
 def main():
     parser = argparse.ArgumentParser()

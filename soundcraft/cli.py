@@ -37,6 +37,9 @@ def main():
     args = parser.parse_args()
     if args.list or args.set:
         dev = autodetect(dbus=not args.no_dbus)
+        if dev is None:
+            print(f"No compatible device detected")
+            sys.exit(1)
         print(f"Detected a {dev.name}")
         if args.set:
             try:
