@@ -41,7 +41,10 @@ class NotepadDbus(object):
           <property name='fixedRouting' type='a{ss}' access='read' />
           <property name='routingTarget' type='s' access='read' />
           <property name='sources' type='as' access='read' />
-          <property name='routingSource' type='s' access='readwrite' />
+          <property name='routingSource' type='s' access='read' />
+          <method name='setRouting'>
+             <arg type='s' name='source' direction='in' />
+          </method>
         </interface>
       </node>
     """
@@ -69,9 +72,9 @@ class NotepadDbus(object):
     def routingSource(self):
         return self._dev.routingSource
 
-    @routingSource.setter
-    def routingSource(self, request):
-        self._dev.routingSource = request
+    def setRouting(self, source, dbus_context):
+        # TODO: use dbus_context to authorize against polkit
+        self._dev.setRouting(source)
 
 class Service:
     def __init__(self):

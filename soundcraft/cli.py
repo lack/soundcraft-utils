@@ -48,7 +48,7 @@ def main():
         print(f"Detected a {dev.name}")
         if args.set:
             try:
-                dev.routingSource = args.set
+                dev.setRouting(args.set)
             except ValueError:
                 print(f"Unrecognised input choice {args.set}")
                 print(f"Run -l to list the valid choices")

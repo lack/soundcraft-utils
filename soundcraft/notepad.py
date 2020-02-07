@@ -6,7 +6,7 @@ import os
 
 def autodetect():
     for devType in ('12fx', '8fx', '5'):
-        dev = eval(f"Notepad_{devType}()");
+        dev = eval(f"Notepad_{devType}()")
         if dev.found():
             return dev
 
@@ -38,10 +38,9 @@ class NotepadBase:
             return 'UNKNOWN'
         return self.Sources(self.state['source']).name
 
-    @routingSource.setter
-    def routingSource(self, request):
+    def setRouting(self, source):
         assert self.found()
-        source = self._parseSourcename(request)
+        source = self._parseSourcename(source)
         if source is None:
             raise ValueError(f"Requested input {request} is not a valid choice")
         print(f"Switching USB audio input to {source.name}")
