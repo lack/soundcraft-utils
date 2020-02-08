@@ -34,6 +34,9 @@ setup(
             "soundcraft_ctl=soundcraft.cli:main",
             "soundcraft_dbus_service=soundcraft.dbus:main",
         ],
+        "gui_scripts": [
+            "soundcraft_gui=soundcraft.gui:main",
+        ],
     },
     package_data={
         'soundcraft': ['data/dbus-1/system.d/*', 'data/dbus-1/system-services/*'],

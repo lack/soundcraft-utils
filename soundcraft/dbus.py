@@ -13,25 +13,9 @@ gi.require_version('GUdev', '1.0')
 from gi.repository import GLib
 from gi.repository import GUdev
 from pydbus import SystemBus
-
-def objPath(idx):
-    return f"/soundcraft/utils/notepad/{idx}"
+from pydbus.generic import signal
 
 BUSNAME='soundcraft.utils.notepad'
-
-class DeviceList(object):
-    """
-      <node>
-        <interface name='soundcraft.utils.notepad'>
-          <property name='version' type='s' access='read' />
-        </interface>
-      </node>
-    """
-
-    # TODO: Should also be an org.freedesktop.ObjectManager
-    @property
-    def version(self):
-        return soundcraft.__version__
 
 class NotepadDbus(object):
     """
@@ -41,10 +25,14 @@ class NotepadDbus(object):
           <property name='fixedRouting' type='a{ss}' access='read' />
           <property name='routingTarget' type='s' access='read' />
           <property name='sources' type='as' access='read' />
-          <property name='routingSource' type='s' access='readwrite' />
+          <property name='routingSource' type='s' access='readwrite'>
+            <annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="true"/>
+          </property>
         </interface>
       </node>
     """
+
+    InterfaceName = 'soundcraft.utils.notepad.device'
 
     def __init__(self, dev):
         self._dev = dev
@@ -72,16 +60,40 @@ class NotepadDbus(object):
     @routingSource.setter
     def routingSource(self, request):
         self._dev.routingSource = request
+        self.PropertiesChanged(self.InterfaceName, {"routingSource": self.routingSource}, [])
+
+    PropertiesChanged = signal()
 
 class Service:
+    """
+      <node>
+        <interface name='soundcraft.utils.notepad'>
+          <property name='version' type='s' access='read' />
+          <property name='devices' type='ao' access='read'>
+            <annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="true"/>
+          </property>
+          <signal name='Added'>
+            <arg name='path' type='o'/>
+          </signal>
+          <signal name='Removed'>
+            <arg name='path' type='o'/>
+          </signal>
+        </interface>
+      </node>
+    """
+
+    InterfaceName = 'soundcraft.utils.notepad'
+    PropertiesChanged = signal()
+    Added = signal()
+    Removed = signal()
+
     def __init__(self):
-        self.dev = None
         self.object = None
         self.bus = SystemBus()
-        self.busname = self.bus.publish(BUSNAME, DeviceList())
         self.udev = GUdev.Client(subsystems = ["usb/usb_device"])
         self.udev.connect('uevent', self.uevent)
         self.loop = GLib.MainLoop()
+        self.busname = self.bus.publish(BUSNAME, self)
 
     def run(self):
         self.tryRegister()
@@ -89,17 +101,35 @@ class Service:
             print(f"Waiting for one to arrive...")
         self.loop.run()
 
+    @property
+    def version(self):
+        return soundcraft.__version__
+
+    @property
+    def devices(self):
+        if self.hasDevice():
+            return [self.object._path]
+        return []
+
+    def objPath(self, idx):
+        return f"/soundcraft/utils/notepad/{idx}"
+
     def tryRegister(self):
         if self.hasDevice():
-            print(f"There is already a {self.dev.name} on the bus at {objPath(0)}")
+            print(f"There is already a {self.object._wrapped._dev.name} on the bus at {self.object._path}")
             return
-        self.dev = soundcraft.notepad.autodetect()
-        if self.dev is None:
+        dev = soundcraft.notepad.autodetect()
+        if dev is None:
             print(f"No recognised device was found")
             return
-        self.object = self.bus.register_object(objPath(0), NotepadDbus(self.dev), None)
-        print(f"Presenting {self.dev.name} on the system bus as {objPath(0)}")
-        return
+        path = self.objPath(0)
+        wrapped = NotepadDbus(dev)
+        self.object = self.bus.register_object(path, wrapped, None)
+        self.object._wrapped = wrapped
+        self.object._path = path
+        print(f"Presenting {self.object._wrapped._dev.name} on the system bus as {path}")
+        self.Added(path)
+        self.PropertiesChanged(self.InterfaceName, {"devices": self.devices}, [])
 
     def hasDevice(self):
         return self.object is not None
@@ -107,10 +137,12 @@ class Service:
     def unregister(self):
         if not self.hasDevice():
             return
-        print(f"Removed {self.dev.name} AKA {objPath(0)} from the system bus")
+        path = self.object._path
+        print(f"Removed {self.object._wrapped._dev.name} AKA {path} from the system bus")
         self.object.unregister()
         self.object = None
-        self.dev = None
+        self.PropertiesChanged(self.InterfaceName, {"devices": self.devices}, [])
+        self.Removed(path)
 
     def uevent(self, observer, action, device):
         if action == 'add':
@@ -121,11 +153,11 @@ class Service:
                 self.tryRegister()
                 if not self.hasDevice():
                     print(f"Contact the developer for help adding support for your advice")
-        elif action == 'remove':
+        elif action == 'remove' and self.hasDevice():
             # UDEV adds leading 0s to decimal numbers.  They're not octal.  Why??
             busnum = int(device.get_property('BUSNUM').lstrip("0"))
             devnum = int(device.get_property('DEVNUM').lstrip("0"))
-            if busnum == self.dev.dev.bus and devnum == self.dev.dev.address:
+            if busnum == self.object._wrapped._dev.bus and devnum == self.object._wrapped._dev.address:
                 self.unregister()
 
 def findDbusFiles():
@@ -165,12 +197,35 @@ def setup(cfgroot="/usr/share/dbus-1"):
                 with open(dst, "w") as dstfile:
                     dstfile.write(srcTemplate.substitute(templateData))
 
-def autodetect():
-    try:
-        bus = SystemBus()
-        return bus.get(BUSNAME, objPath(0))
-    except KeyError:
-        return None
+class Client:
+    MGRPATH = '/soundcraft/utils/notepad'
+
+    def __init__(self, added_cb = None, removed_cb = None):
+        self.bus = SystemBus()
+        self.manager = self.bus.get(BUSNAME, self.MGRPATH)
+        if added_cb is not None:
+            self.onAdded(added_cb)
+        if removed_cb is not None:
+            self.onRemoved(removed_cb)
+
+    def autodetect(self):
+        devices = self.manager.devices
+        if not devices:
+            return None
+        return self.bus.get(BUSNAME, devices[0])
+
+    def waitForDevice(self):
+        loop = GLib.MainLoop()
+        self.manager.onAdded = lambda path: loop.quit()
+        loop.run()
+        return self.autodetect()
+
+    def onAdded(self, added_cb):
+        self.manager.onAdded = \
+                lambda path: added_cb(self.bus.get(BUSNAME, path))
+
+    def onRemoved(self, removed_cb):
+        self.manager.onRemoved = removed_cb
 
 def main():
     parser = argparse.ArgumentParser()

@@ -6,7 +6,7 @@ import os
 
 def autodetect():
     for devType in ('12fx', '8fx', '5'):
-        dev = eval(f"Notepad_{devType}()");
+        dev = eval(f"Notepad_{devType}()")
         if dev.found():
             return dev
 

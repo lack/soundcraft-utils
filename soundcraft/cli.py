@@ -1,16 +1,15 @@
 import argparse
 import sys
-import time
 import importlib
 
 def autodetect(dbus=True):
     if dbus:
         source = importlib.import_module("soundcraft.dbus")
-        result = source.autodetect()
+        client = source.Client()
+        result = client.autodetect()
         if result is None:
-            # Wait a bit in case the dbus service just started, then try again:
-            time.sleep(0.25)
-            result = source.autodetect()
+            print(f"No devices found... waiting for one to appear")
+            result = client.waitForDevice()
         return result
     else:
         source = importlib.import_module("soundcraft.notepad")
