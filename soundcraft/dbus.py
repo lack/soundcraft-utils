@@ -197,12 +197,20 @@ def setup(cfgroot="/usr/share/dbus-1"):
                 with open(dst, "w") as dstfile:
                     dstfile.write(srcTemplate.substitute(templateData))
 
+class VersionIncompatibilityError(RuntimeError):
+    def __init__(self, serviceVersion, clientVersion):
+        super().__init__(f"Running service version {serviceVersion} is incompatible with the client version {clientVersion} - Kill and restart the dbus service")
+
 class Client:
     MGRPATH = '/soundcraft/utils/notepad'
 
     def __init__(self, added_cb = None, removed_cb = None):
         self.bus = SystemBus()
         self.manager = self.bus.get(BUSNAME, self.MGRPATH)
+        mgrVersion = self.manager.version
+        localVersion = soundcraft.__version__
+        if mgrVersion != localVersion:
+            raise VersionIncompatibilityError(self.manager.version, soundcraft.__version__)
         if added_cb is not None:
             self.onAdded(added_cb)
         if removed_cb is not None:
