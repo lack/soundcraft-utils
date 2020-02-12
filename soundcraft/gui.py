@@ -24,6 +24,7 @@ class App(Gtk.Window):
         if self.grid is not None:
             self.remove(self.grid)
         self.dev = dev
+        dev.onPropertiesChanged = self.reset
         self.grid = Gtk.Grid()
         self.add(self.grid)
         self.row = 0
@@ -112,7 +113,7 @@ class App(Gtk.Window):
         self.dev.routingSource = self.nextSelection
         self.setActionsEnabled(False)
 
-    def reset(self, button=None):
+    def reset(self, button=None, *args, **kwargs):
         for (i, source) in enumerate(self.dev.sources):
             if self.dev.routingSource == source:
                 self.sourceCombo.set_active(i)
