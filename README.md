@@ -56,6 +56,14 @@ unprivileged account.
 Usage
 -----
 
+### GUI
+
+```bash
+soundcraft_gui
+```
+
+### CLI
+
 List possible channel routing choices:
 
 ```bash
@@ -82,4 +90,3 @@ TODO
     - Notepad-5 likewise, same constraints
 - Auto-duck feature
 - Firmware upgrade
-- GUI?  People like those, right?
