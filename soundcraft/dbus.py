@@ -157,7 +157,7 @@ class Service:
             # UDEV adds leading 0s to decimal numbers.  They're not octal.  Why??
             busnum = int(device.get_property('BUSNUM').lstrip("0"))
             devnum = int(device.get_property('DEVNUM').lstrip("0"))
-            if busnum == self.object._wrapped._dev.bus and devnum == self.object._wrapped._dev.address:
+            if busnum == self.object._wrapped._dev.dev.bus and devnum == self.object._wrapped._dev.dev.address:
                 self.unregister()
 
 def findDbusFiles():
