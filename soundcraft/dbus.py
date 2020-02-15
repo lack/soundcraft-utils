@@ -202,6 +202,10 @@ def setup(cfgroot="/usr/share/dbus-1"):
                 srcTemplate = Template(srcfile.read())
                 with open(dst, "w") as dstfile:
                     dstfile.write(srcTemplate.substitute(templateData))
+    print(f"Starting service version {soundcraft.__version__}...")
+    client = Client()
+    print(f"Setup is complete.")
+    print(f"Run soundcraft_gui or soundcraft_cli as a regular user")
 
 class DbusInitializationError(RuntimeError):
     pass
