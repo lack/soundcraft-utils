@@ -78,6 +78,7 @@ class Service:
           <signal name='Removed'>
             <arg name='path' type='o'/>
           </signal>
+          <method name='Shutdown'/>
         </interface>
       </node>
     """
@@ -110,6 +111,11 @@ class Service:
         if self.hasDevice():
             return [self.object._path]
         return []
+
+    def Shutdown(self):
+        print("Shutting down")
+        self.unregister()
+        self.loop.quit()
 
     def objPath(self, idx):
         return f"/soundcraft/utils/notepad/{idx}"
@@ -214,9 +220,10 @@ class Client:
     def __init__(self, added_cb = None, removed_cb = None):
         self.bus = SystemBus()
         self.dbusmgr = self.bus.get('.DBus')
+        self.dbusmgr.onNameOwnerChanged = self._nameChanged
         self.manager = None
         self.initManager()
-        self.ensureServiceVersion()
+        self.ensureServiceVersion(allowRestart=True)
         if removed_cb is not None:
             self.deviceRemoved.connect(removed_cb)
         if added_cb is not None:
@@ -236,11 +243,41 @@ class Client:
     def servicePid(self):
         return self.dbusmgr.GetConnectionUnixProcessID(BUSNAME)
 
-    def ensureServiceVersion(self):
-        mgrVersion = self.manager.version
+    def serviceVersion(self):
+        return self.manager.version
+
+    def ensureServiceVersion(self, allowRestart=False):
+        mgrVersion = self.serviceVersion()
         localVersion = soundcraft.__version__
         if mgrVersion != localVersion:
-            raise VersionIncompatibilityError(self.manager.version, self.servicePid(), soundcraft.__version__)
+            if not callable(getattr(self.manager, 'Shutdown', None)) or not allowRestart:
+                raise VersionIncompatibilityError(mgrVersion, self.servicePid(), localVersion)
+            else:
+                self.restartService(mgrVersion, localVersion)
+                self.ensureServiceVersion(allowRestart=False)
+
+    def restartService(self, mgrVersion, localVersion):
+        loop = GLib.MainLoop()
+        with self.serviceDisconnected.connect(loop.quit):
+            print(f"Restarting soundcraft dbus service ({self.servicePid()}) to upgrade {mgrVersion}->{localVersion}")
+            self.manager.Shutdown()
+            loop.run()
+        self.initManager()
+        print(f"Restarted the service at {self.servicePid()}")
+
+    serviceConnected = signal()
+
+    serviceDisconnected = signal()
+
+    def _nameChanged(self, busname, old, new):
+        if busname != BUSNAME:
+            return
+        if old == '':
+            print(f"New {busname} connected")
+            self.serviceConnected()
+        elif new == '':
+            print(f"{busname} service disconnected")
+            self.serviceDisconnected()
 
     def autodetect(self):
         devices = self.manager.devices
