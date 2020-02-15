@@ -4,13 +4,17 @@ import importlib
 
 def autodetect(dbus=True):
     if dbus:
-        source = importlib.import_module("soundcraft.dbus")
-        client = source.Client()
-        result = client.autodetect()
-        if result is None:
-            print(f"No devices found... waiting for one to appear")
-            result = client.waitForDevice()
-        return result
+        try:
+            source = importlib.import_module("soundcraft.dbus")
+            client = source.Client()
+            result = client.autodetect()
+            if result is None:
+                print(f"No devices found... waiting for one to appear")
+                result = client.waitForDevice()
+            return result
+        except source.DbusInitializationError as e:
+            print(e)
+            sys.exit(2)
     else:
         source = importlib.import_module("soundcraft.notepad")
         return source.autodetect()

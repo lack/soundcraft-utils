@@ -1,4 +1,6 @@
-from .dbus import Client
+from .dbus import Client, DbusInitializationError
+import sys
+import traceback
 import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
@@ -12,12 +14,20 @@ class App(Gtk.Window):
         self.setNoDevice()
         try:
             self.dbus = Client(added_cb=self.deviceAdded, removed_cb=self.deviceRemoved)
-        except Exception as e:
+        except DbusInitializationError as e:
             print(f"Startup error: {str(e)}")
-            dialog = Gtk.MessageDialog(parent=self, message_type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK, text="Could not start soundcraft_gui")
-            dialog.format_secondary_text(str(e))
-            dialog.run()
-            raise
+            self._startupFailure("Could not start soundcraft_gui", str(e))
+            raise e
+        except Exception as e:
+            print("Unexpected exception at gui startup")
+            traceback.print_exc()
+            self._startupFailure(f"Unexpected exception {e.__class__.__name__}", str(e))
+            raise e
+
+    def _startupFailure(self, title, message):
+        dialog = Gtk.MessageDialog(parent=self, message_type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK, text=title)
+        dialog.format_secondary_text(message)
+        dialog.run()
 
     def setDevice(self, dev):
         if self.dev is not None:
@@ -127,7 +137,10 @@ class App(Gtk.Window):
         self.resetButton.set_sensitive(enabled)
 
 def main():
-    app = App()
+    try:
+        app = App()
+    except:
+        sys.exit(1)
     Gtk.main()
 
 if __name__ == '__main__':

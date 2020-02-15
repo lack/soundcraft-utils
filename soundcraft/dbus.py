@@ -197,9 +197,16 @@ def setup(cfgroot="/usr/share/dbus-1"):
                 with open(dst, "w") as dstfile:
                     dstfile.write(srcTemplate.substitute(templateData))
 
-class VersionIncompatibilityError(RuntimeError):
+class DbusInitializationError(RuntimeError):
+    pass
+
+class VersionIncompatibilityError(DbusInitializationError):
     def __init__(self, serviceVersion, pid, clientVersion):
         super().__init__(f"Running service version {serviceVersion} (PID {pid}) is incompatible with the client version {clientVersion} - Kill and restart the dbus service")
+
+class DbusServiceSetupError(DbusInitializationError):
+    def __init__(self):
+        super().__init__(f"No dbus service found for {BUSNAME} - Run 'soundcraft_dbus_service --setup' as root to enable it")
 
 class Client:
     MGRPATH = '/soundcraft/utils/notepad'
@@ -217,9 +224,14 @@ class Client:
             self.autodetect()
 
     def initManager(self):
-        self.manager = self.bus.get(BUSNAME, self.MGRPATH)
-        self.manager.onAdded = self._onAdded
-        self.manager.onRemoved = self._onRemoved
+        try:
+            self.manager = self.bus.get(BUSNAME, self.MGRPATH)
+            self.manager.onAdded = self._onAdded
+            self.manager.onRemoved = self._onRemoved
+        except Exception as e:
+            if 'org.freedesktop.DBus.Error.ServiceUnknown' in e.message:
+                raise DbusServiceSetupError()
+            raise e
 
     def servicePid(self):
         return self.dbusmgr.GetConnectionUnixProcessID(BUSNAME)
