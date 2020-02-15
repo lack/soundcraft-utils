@@ -9,14 +9,11 @@ class App(Gtk.Window):
         self.connect("destroy", Gtk.main_quit)
         self.grid = None
         self.dev = None
+        self.setNoDevice()
         try:
             self.dbus = Client(added_cb=self.deviceAdded, removed_cb=self.deviceRemoved)
-            dev = self.dbus.autodetect()
-            if dev is not None:
-                self.setDevice(dev)
-            else:
-                self.setNoDevice()
         except Exception as e:
+            print(f"Startup error: {str(e)}")
             dialog = Gtk.MessageDialog(parent=self, message_type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK, text="Could not start soundcraft_gui")
             dialog.format_secondary_text(str(e))
             dialog.run()

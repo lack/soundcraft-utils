@@ -198,42 +198,62 @@ def setup(cfgroot="/usr/share/dbus-1"):
                     dstfile.write(srcTemplate.substitute(templateData))
 
 class VersionIncompatibilityError(RuntimeError):
-    def __init__(self, serviceVersion, clientVersion):
-        super().__init__(f"Running service version {serviceVersion} is incompatible with the client version {clientVersion} - Kill and restart the dbus service")
+    def __init__(self, serviceVersion, pid, clientVersion):
+        super().__init__(f"Running service version {serviceVersion} (PID {pid}) is incompatible with the client version {clientVersion} - Kill and restart the dbus service")
 
 class Client:
     MGRPATH = '/soundcraft/utils/notepad'
 
     def __init__(self, added_cb = None, removed_cb = None):
         self.bus = SystemBus()
+        self.dbusmgr = self.bus.get('.DBus')
+        self.manager = None
+        self.initManager()
+        self.ensureServiceVersion()
+        if removed_cb is not None:
+            self.deviceRemoved.connect(removed_cb)
+        if added_cb is not None:
+            self.deviceAdded.connect(added_cb)
+            self.autodetect()
+
+    def initManager(self):
         self.manager = self.bus.get(BUSNAME, self.MGRPATH)
+        self.manager.onAdded = self._onAdded
+        self.manager.onRemoved = self._onRemoved
+
+    def servicePid(self):
+        return self.dbusmgr.GetConnectionUnixProcessID(BUSNAME)
+
+    def ensureServiceVersion(self):
         mgrVersion = self.manager.version
         localVersion = soundcraft.__version__
         if mgrVersion != localVersion:
-            raise VersionIncompatibilityError(self.manager.version, soundcraft.__version__)
-        if added_cb is not None:
-            self.onAdded(added_cb)
-        if removed_cb is not None:
-            self.onRemoved(removed_cb)
+            raise VersionIncompatibilityError(self.manager.version, self.servicePid(), soundcraft.__version__)
 
     def autodetect(self):
         devices = self.manager.devices
         if not devices:
             return None
-        return self.bus.get(BUSNAME, devices[0])
+        proxyDevice = self.bus.get(BUSNAME, devices[0])
+        self.deviceAdded(proxyDevice)
+        return proxyDevice
 
     def waitForDevice(self):
         loop = GLib.MainLoop()
-        self.manager.onAdded = lambda path: loop.quit()
-        loop.run()
+        with self.manager.Added.connect(lambda path: loop.quit()):
+            loop.run()
         return self.autodetect()
 
-    def onAdded(self, added_cb):
-        self.manager.onAdded = \
-                lambda path: added_cb(self.bus.get(BUSNAME, path))
+    deviceAdded = signal()
 
-    def onRemoved(self, removed_cb):
-        self.manager.onRemoved = removed_cb
+    def _onAdded(self, path):
+        proxyDevice = self.bus.get(BUSNAME, path)
+        self.deviceAdded(proxyDevice)
+
+    deviceRemoved = signal()
+
+    def _onRemoved(self, path):
+        self.deviceRemoved(path)
 
 def main():
     parser = argparse.ArgumentParser()
