@@ -1,4 +1,4 @@
-from .dbus import Client, DbusInitializationError
+from .dbus import Client, DbusInitializationError, VersionIncompatibilityError
 import sys
 import traceback
 import gi
@@ -23,11 +23,24 @@ class App(Gtk.Window):
             traceback.print_exc()
             self._startupFailure(f"Unexpected exception {e.__class__.__name__}", str(e))
             raise e
+        self.dbus.serviceDisconnected.connect(self.dbusDisconnect)
+        self.dbus.serviceConnected.connect(self.dbusReconnect)
 
     def _startupFailure(self, title, message):
         dialog = Gtk.MessageDialog(parent=self, message_type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK, text=title)
         dialog.format_secondary_text(message)
         dialog.run()
+
+    def dbusDisconnect(self):
+        self.setNoDevice()
+
+    def dbusReconnect(self):
+        try:
+            self.dbus.ensureServiceVersion()
+        except VersionIncompatibilityError as e:
+            self._startupFailure("Dbus service version incompatibility", "Restart of this gui application is required")
+            Gtk.main_quit()
+            # Todo: Can we relaunch ourselves?
 
     def setDevice(self, dev):
         if self.dev is not None:
@@ -57,6 +70,7 @@ class App(Gtk.Window):
         self.show_all()
 
     def setNoDevice(self):
+        self.dev = None
         if self.grid is not None:
             self.remove(self.grid)
         self.grid = Gtk.Grid()
@@ -75,7 +89,6 @@ class App(Gtk.Window):
             if self.dev._path != path:
                 # Not our device
                 return
-            self.dev = None
         self.setNoDevice()
 
     def addHeading(self, text):
