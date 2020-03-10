@@ -1,10 +1,11 @@
-from setuptools import setup, find_packages
 import re
 
-version = re.search('^__version__\s*=\s*"(.*)"',
-    open('soundcraft/__init__.py').read(),
-    re.M).group(1)
- 
+from setuptools import find_packages, setup
+
+version = re.search(
+    '^__version__\\s*=\\s*"(.*)"', open("soundcraft/__init__.py").read(), re.M
+).group(1)
+
 with open("README.md", "rb") as fh:
     long_description = fh.read().decode("utf-8")
 
@@ -24,21 +25,16 @@ setup(
         "Operating System :: OS Independent",
         "Topic :: Multimedia :: Sound/Audio :: Mixers",
     ],
-    python_requires='>=3.6',
-    install_requires=[
-        "pyusb",
-        "pydbus",
-    ],
+    python_requires=">=3.6",
+    install_requires=["pyusb", "pydbus"],
     entry_points={
         "console_scripts": [
             "soundcraft_ctl=soundcraft.cli:main",
             "soundcraft_dbus_service=soundcraft.dbus:main",
         ],
-        "gui_scripts": [
-            "soundcraft_gui=soundcraft.gui:main",
-        ],
+        "gui_scripts": ["soundcraft_gui=soundcraft.gui:main"],
     },
     package_data={
-        'soundcraft': ['data/dbus-1/system.d/*', 'data/dbus-1/system-services/*'],
+        "soundcraft": ["data/dbus-1/system.d/*", "data/dbus-1/system-services/*"]
     },
 )

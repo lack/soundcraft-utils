@@ -1,13 +1,17 @@
-from .dbus import Client, DbusInitializationError, VersionIncompatibilityError
 import sys
 import traceback
+
 import gi
+
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
+from .dbus import Client, DbusInitializationError, VersionIncompatibilityError
+
+
 class App(Gtk.Window):
     def __init__(self):
-        super().__init__(title = "Soundcraft-utils")
+        super().__init__(title="Soundcraft-utils")
         self.connect("destroy", Gtk.main_quit)
         self.grid = None
         self.dev = None
@@ -27,7 +31,12 @@ class App(Gtk.Window):
         self.dbus.serviceConnected.connect(self.dbusReconnect)
 
     def _startupFailure(self, title, message):
-        dialog = Gtk.MessageDialog(parent=self, message_type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK, text=title)
+        dialog = Gtk.MessageDialog(
+            parent=self,
+            message_type=Gtk.MessageType.ERROR,
+            buttons=Gtk.ButtonsType.OK,
+            text=title,
+        )
         dialog.format_secondary_text(message)
         dialog.run()
 
@@ -37,14 +46,17 @@ class App(Gtk.Window):
     def dbusReconnect(self):
         try:
             self.dbus.ensureServiceVersion()
-        except VersionIncompatibilityError as e:
-            self._startupFailure("Dbus service version incompatibility", "Restart of this gui application is required")
+        except VersionIncompatibilityError:
+            self._startupFailure(
+                "Dbus service version incompatibility",
+                "Restart of this gui application is required",
+            )
             Gtk.main_quit()
             # Todo: Can we relaunch ourselves?
 
     def setDevice(self, dev):
         if self.dev is not None:
-            if self.dev._path == dev._path: 
+            if self.dev._path == dev._path:
                 # This already is our device
                 return
         if self.grid is not None:
@@ -105,7 +117,13 @@ class App(Gtk.Window):
         left.set_margin_start(10)
         left.set_margin_end(2)
         self.grid.attach(left, 0, self.row, 1, 1)
-        self.grid.attach(Gtk.Image.new_from_icon_name("pan-start", Gtk.IconSize.BUTTON), 1, self.row, 1, 1)
+        self.grid.attach(
+            Gtk.Image.new_from_icon_name("pan-start", Gtk.IconSize.BUTTON),
+            1,
+            self.row,
+            1,
+            1,
+        )
         if type(right) == str:
             right = Gtk.Label(label=right)
         right.set_margin_top(10)
@@ -117,7 +135,9 @@ class App(Gtk.Window):
         self.row += 1
 
     def addSep(self):
-        self.grid.attach(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL), 0, self.row, 3, 1)
+        self.grid.attach(
+            Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL), 0, self.row, 3, 1
+        )
         self.row += 1
 
     def addActions(self):
@@ -149,12 +169,14 @@ class App(Gtk.Window):
         self.applyButton.set_sensitive(enabled)
         self.resetButton.set_sensitive(enabled)
 
+
 def main():
     try:
-        app = App()
-    except:
+        App()
+    except Exception:
         sys.exit(1)
     Gtk.main()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

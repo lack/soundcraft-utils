@@ -1,21 +1,26 @@
-import soundcraft
-import soundcraft.notepad
 import argparse
 import os.path
 import sys
 from string import Template
+
 try:
     import gi
 except ModuleNotFoundError:
-    print("\nThe PyGI library must be installed from your distribution; usually called python-gi, python-gobject, or pygobject\n")
+    print(
+        "\nThe PyGI library must be installed from your distribution; usually called python-gi, python-gobject, or pygobject\n"
+    )
     raise
-gi.require_version('GUdev', '1.0')
-from gi.repository import GLib
-from gi.repository import GUdev
+gi.require_version("GUdev", "1.0")
+from gi.repository import GLib, GUdev
 from pydbus import SystemBus
 from pydbus.generic import signal
 
-BUSNAME='soundcraft.utils.notepad'
+import soundcraft
+import soundcraft.notepad
+
+
+BUSNAME = "soundcraft.utils.notepad"
+
 
 class NotepadDbus(object):
     """
@@ -32,7 +37,7 @@ class NotepadDbus(object):
       </node>
     """
 
-    InterfaceName = 'soundcraft.utils.notepad.device'
+    InterfaceName = "soundcraft.utils.notepad.device"
 
     def __init__(self, dev):
         self._dev = dev
@@ -60,9 +65,12 @@ class NotepadDbus(object):
     @routingSource.setter
     def routingSource(self, request):
         self._dev.routingSource = request
-        self.PropertiesChanged(self.InterfaceName, {"routingSource": self.routingSource}, [])
+        self.PropertiesChanged(
+            self.InterfaceName, {"routingSource": self.routingSource}, []
+        )
 
     PropertiesChanged = signal()
+
 
 class Service:
     """
@@ -83,7 +91,7 @@ class Service:
       </node>
     """
 
-    InterfaceName = 'soundcraft.utils.notepad'
+    InterfaceName = "soundcraft.utils.notepad"
     PropertiesChanged = signal()
     Added = signal()
     Removed = signal()
@@ -91,8 +99,8 @@ class Service:
     def __init__(self):
         self.object = None
         self.bus = SystemBus()
-        self.udev = GUdev.Client(subsystems = ["usb/usb_device"])
-        self.udev.connect('uevent', self.uevent)
+        self.udev = GUdev.Client(subsystems=["usb/usb_device"])
+        self.udev.connect("uevent", self.uevent)
         self.loop = GLib.MainLoop()
         self.busname = self.bus.publish(BUSNAME, self)
 
@@ -122,7 +130,9 @@ class Service:
 
     def tryRegister(self):
         if self.hasDevice():
-            print(f"There is already a {self.object._wrapped._dev.name} on the bus at {self.object._path}")
+            print(
+                f"There is already a {self.object._wrapped._dev.name} on the bus at {self.object._path}"
+            )
             return
         dev = soundcraft.notepad.autodetect()
         if dev is None:
@@ -133,7 +143,9 @@ class Service:
         self.object = self.bus.register_object(path, wrapped, None)
         self.object._wrapped = wrapped
         self.object._path = path
-        print(f"Presenting {self.object._wrapped._dev.name} on the system bus as {path}")
+        print(
+            f"Presenting {self.object._wrapped._dev.name} on the system bus as {path}"
+        )
         self.Added(path)
         self.PropertiesChanged(self.InterfaceName, {"devices": self.devices}, [])
 
@@ -144,53 +156,65 @@ class Service:
         if not self.hasDevice():
             return
         path = self.object._path
-        print(f"Removed {self.object._wrapped._dev.name} AKA {path} from the system bus")
+        print(
+            f"Removed {self.object._wrapped._dev.name} AKA {path} from the system bus"
+        )
         self.object.unregister()
         self.object = None
         self.PropertiesChanged(self.InterfaceName, {"devices": self.devices}, [])
         self.Removed(path)
 
     def uevent(self, observer, action, device):
-        if action == 'add':
-            idVendor = device.get_property('ID_VENDOR_ID')
-            idProduct = device.get_property('ID_PRODUCT_ID')
+        if action == "add":
+            idVendor = device.get_property("ID_VENDOR_ID")
+            idProduct = device.get_property("ID_PRODUCT_ID")
             if idVendor == "05fc":
                 print(f"Checking new Soundcraft device ({idVendor}:{idProduct})...")
                 self.tryRegister()
                 if not self.hasDevice():
-                    print(f"Contact the developer for help adding support for your advice")
-        elif action == 'remove' and self.hasDevice():
+                    print(
+                        f"Contact the developer for help adding support for your advice"
+                    )
+        elif action == "remove" and self.hasDevice():
             # UDEV adds leading 0s to decimal numbers.  They're not octal.  Why??
-            busnum = int(device.get_property('BUSNUM').lstrip("0"))
-            devnum = int(device.get_property('DEVNUM').lstrip("0"))
-            if busnum == self.object._wrapped._dev.dev.bus and devnum == self.object._wrapped._dev.dev.address:
+            busnum = int(device.get_property("BUSNUM").lstrip("0"))
+            devnum = int(device.get_property("DEVNUM").lstrip("0"))
+            objectdev = self.object._wrapped._dev.dev
+            if busnum == objectdev.bus and devnum == objectdev.address:
                 self.unregister()
+
 
 def findDbusFiles():
     result = {}
     modulepaths = soundcraft.__path__
     for path in modulepaths:
-        dbusdatapath = os.path.join(path, 'data/dbus-1')
+        dbusdatapath = os.path.join(path, "data/dbus-1")
         result[dbusdatapath] = []
         for path, dirs, files in os.walk(dbusdatapath):
             if not files:
                 continue
             for fname in files:
-                relative = os.path.relpath(os.path.join(path, fname), start=dbusdatapath)
+                relative = os.path.relpath(
+                    os.path.join(path, fname), start=dbusdatapath
+                )
                 result[dbusdatapath].append(relative)
     return result
+
 
 def serviceExePath():
     exename = sys.argv[0]
     exename = os.path.abspath(exename)
     if exename.endswith(".py"):
-        raise ValueError("Running setup out of a module-based execution is not supported")
+        raise ValueError(
+            "Running setup out of a module-based execution is not supported"
+        )
     return exename
+
 
 def setup(cfgroot="/usr/share/dbus-1"):
     templateData = {
-        'dbus_service_bin': serviceExePath(),
-        'busname': BUSNAME,
+        "dbus_service_bin": serviceExePath(),
+        "busname": BUSNAME,
     }
     sources = findDbusFiles()
     for (srcpath, files) in sources.items():
@@ -204,26 +228,35 @@ def setup(cfgroot="/usr/share/dbus-1"):
                     dstfile.write(srcTemplate.substitute(templateData))
     print(f"Starting service version {soundcraft.__version__}...")
     client = Client()
+    print(f"Version running: {client.serviceVersion()}")
     print(f"Setup is complete.")
     print(f"Run soundcraft_gui or soundcraft_cli as a regular user")
+
 
 class DbusInitializationError(RuntimeError):
     pass
 
+
 class VersionIncompatibilityError(DbusInitializationError):
     def __init__(self, serviceVersion, pid, clientVersion):
-        super().__init__(f"Running service version {serviceVersion} (PID {pid}) is incompatible with the client version {clientVersion} - Kill and restart the dbus service")
+        super().__init__(
+            f"Running service version {serviceVersion} (PID {pid}) is incompatible with the client version {clientVersion} - Kill and restart the dbus service"
+        )
+
 
 class DbusServiceSetupError(DbusInitializationError):
     def __init__(self):
-        super().__init__(f"No dbus service found for {BUSNAME} - Run 'soundcraft_dbus_service --setup' as root to enable it")
+        super().__init__(
+            f"No dbus service found for {BUSNAME} - Run 'soundcraft_dbus_service --setup' as root to enable it"
+        )
+
 
 class Client:
-    MGRPATH = '/soundcraft/utils/notepad'
+    MGRPATH = "/soundcraft/utils/notepad"
 
-    def __init__(self, added_cb = None, removed_cb = None):
+    def __init__(self, added_cb=None, removed_cb=None):
         self.bus = SystemBus()
-        self.dbusmgr = self.bus.get('.DBus')
+        self.dbusmgr = self.bus.get(".DBus")
         self.dbusmgr.onNameOwnerChanged = self._nameChanged
         self.manager = None
         self.initManager()
@@ -240,7 +273,7 @@ class Client:
             self.manager.onAdded = self._onAdded
             self.manager.onRemoved = self._onRemoved
         except Exception as e:
-            if 'org.freedesktop.DBus.Error.ServiceUnknown' in e.message:
+            if "org.freedesktop.DBus.Error.ServiceUnknown" in e.message:
                 raise DbusServiceSetupError()
             raise e
 
@@ -250,12 +283,17 @@ class Client:
     def serviceVersion(self):
         return self.manager.version
 
+    def _canShutdown(self):
+        return callable(getattr(self.manager, "Shutdown", None))
+
     def ensureServiceVersion(self, allowRestart=False):
         mgrVersion = self.serviceVersion()
         localVersion = soundcraft.__version__
         if mgrVersion != localVersion:
-            if not callable(getattr(self.manager, 'Shutdown', None)) or not allowRestart:
-                raise VersionIncompatibilityError(mgrVersion, self.servicePid(), localVersion)
+            if not self._canShutdown() or not allowRestart:
+                raise VersionIncompatibilityError(
+                    mgrVersion, self.servicePid(), localVersion
+                )
             else:
                 self.restartService(mgrVersion, localVersion)
                 self.ensureServiceVersion(allowRestart=False)
@@ -263,7 +301,9 @@ class Client:
     def restartService(self, mgrVersion, localVersion):
         loop = GLib.MainLoop()
         with self.serviceDisconnected.connect(loop.quit):
-            print(f"Restarting soundcraft dbus service ({self.servicePid()}) to upgrade {mgrVersion}->{localVersion}")
+            print(
+                f"Restarting soundcraft dbus service ({self.servicePid()}) to upgrade {mgrVersion}->{localVersion}"
+            )
             self.manager.Shutdown()
             loop.run()
         self.initManager()
@@ -276,10 +316,10 @@ class Client:
     def _nameChanged(self, busname, old, new):
         if busname != BUSNAME:
             return
-        if old == '':
+        if old == "":
             print(f"New {busname} connected")
             self.serviceConnected()
-        elif new == '':
+        elif new == "":
             print(f"{busname} service disconnected")
             self.serviceDisconnected()
 
@@ -308,9 +348,14 @@ class Client:
     def _onRemoved(self, path):
         self.deviceRemoved(path)
 
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--setup", help="Set up the dbus configuration in /usr/share/dbus-1 (Must be run as root)", action="store_true")
+    parser.add_argument(
+        "--setup",
+        help="Set up the dbus configuration in /usr/share/dbus-1 (Must be run as root)",
+        action="store_true",
+    )
     args = parser.parse_args()
     if args.setup:
         setup()
@@ -318,5 +363,6 @@ def main():
         service = Service()
         service.run()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

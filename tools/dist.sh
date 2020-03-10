@@ -14,5 +14,6 @@ if [[ $VERSION_SUFFIX ]]; then
     fi
     sed -i.bak -e "s/^\\(__version__ = ['\"][^'\"]*\\)/\\1$VERSION_SUFFIX/" $ORIG
 fi
-python3 setup.py sdist bdist_wheel
+python3 setup.py sdist bdist_wheel || exit 1
 [[ -f $BAK ]] && mv $BAK $ORIG
+exit 0
