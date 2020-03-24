@@ -1,6 +1,6 @@
 import argparse
-import os.path
 import sys
+from pathlib import Path
 from string import Template
 
 try:
@@ -188,39 +188,35 @@ def findDbusFiles():
     result = {}
     modulepaths = soundcraft.__path__
     for path in modulepaths:
-        dbusdatapath = os.path.join(path, "data/dbus-1")
-        result[dbusdatapath] = []
-        for path, dirs, files in os.walk(dbusdatapath):
-            if not files:
+        path = Path(path)
+        datapath = path / "data" / "dbus-1"
+        result[datapath] = []
+        for f in datapath.glob("**/*"):
+            if f.is_dir():
                 continue
-            for fname in files:
-                relative = os.path.relpath(
-                    os.path.join(path, fname), start=dbusdatapath
-                )
-                result[dbusdatapath].append(relative)
+            result[datapath].append(f.relative_to(datapath))
     return result
 
 
 def serviceExePath():
-    exename = sys.argv[0]
-    exename = os.path.abspath(exename)
-    if exename.endswith(".py"):
+    exename = Path(sys.argv[0]).resolve()
+    if exename.suffix == ".py":
         raise ValueError(
             "Running setup out of a module-based execution is not supported"
         )
     return exename
 
 
-def setup(cfgroot="/usr/share/dbus-1"):
+def setup(cfgroot=Path("/usr/share/dbus-1")):
     templateData = {
-        "dbus_service_bin": serviceExePath(),
+        "dbus_service_bin": str(serviceExePath()),
         "busname": BUSNAME,
     }
     sources = findDbusFiles()
     for (srcpath, files) in sources.items():
-        for fname in files:
-            src = os.path.join(srcpath, fname)
-            dst = os.path.join(cfgroot, fname)
+        for f in files:
+            src = srcpath / f
+            dst = cfgroot / f
             print(f"Installing {src} -> {dst}")
             with open(src, "r") as srcfile:
                 srcTemplate = Template(srcfile.read())
@@ -229,8 +225,28 @@ def setup(cfgroot="/usr/share/dbus-1"):
     print(f"Starting service version {soundcraft.__version__}...")
     client = Client()
     print(f"Version running: {client.serviceVersion()}")
-    print(f"Setup is complete.")
+    print(f"Setup is complete")
     print(f"Run soundcraft_gui or soundcraft_cli as a regular user")
+
+
+def uninstall(cfgroot=Path("/usr/share/dbus-1")):
+    try:
+        client = Client()
+        print(f"Shutting down service version {client.serviceVersion()}")
+        client.shutdown()
+        print(f"Stopped")
+    except Exception:
+        print("Service not running")
+    sources = findDbusFiles()
+    for (srcpath, files) in sources.items():
+        for f in files:
+            path = cfgroot / f
+            print(f"Removing {path}")
+            try:
+                path.unlink()
+            except Exception as e:
+                print(e)
+    print(f"Dbus service is unregistered")
 
 
 class DbusInitializationError(RuntimeError):
@@ -299,15 +315,18 @@ class Client:
                 self.ensureServiceVersion(allowRestart=False)
 
     def restartService(self, mgrVersion, localVersion):
-        loop = GLib.MainLoop()
-        with self.serviceDisconnected.connect(loop.quit):
-            print(
-                f"Restarting soundcraft dbus service ({self.servicePid()}) to upgrade {mgrVersion}->{localVersion}"
-            )
-            self.manager.Shutdown()
-            loop.run()
+        print(
+            f"Restarting soundcraft dbus service ({self.servicePid()}) to upgrade {mgrVersion}->{localVersion}"
+        )
+        self.shutdown()
         self.initManager()
         print(f"Restarted the service at {self.servicePid()}")
+
+    def shutdown(self):
+        loop = GLib.MainLoop()
+        with self.serviceDisconnected.connect(loop.quit):
+            self.manager.Shutdown()
+            loop.run()
 
     serviceConnected = signal()
 
@@ -356,9 +375,16 @@ def main():
         help="Set up the dbus configuration in /usr/share/dbus-1 (Must be run as root)",
         action="store_true",
     )
+    parser.add_argument(
+        "--uninstall",
+        help="Remove any setup performed by --setup",
+        action="store_true",
+    )
     args = parser.parse_args()
     if args.setup:
         setup()
+    elif args.uninstall:
+        uninstall()
     else:
         service = Service()
         service.run()
