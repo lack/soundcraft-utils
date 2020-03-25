@@ -35,6 +35,6 @@ setup(
         "gui_scripts": ["soundcraft_gui=soundcraft.gui:main"],
     },
     package_data={
-        "soundcraft": ["data/dbus-1/system.d/*", "data/dbus-1/system-services/*"]
+        "soundcraft": ["data/*/*/*", "data/*/*"]
     },
 )

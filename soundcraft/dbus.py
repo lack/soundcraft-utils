@@ -1,4 +1,6 @@
 import argparse
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 from string import Template
@@ -186,12 +188,12 @@ class Service:
                 self.unregister()
 
 
-def findDbusFiles():
+def findDataFiles(subdir):
     result = {}
     modulepaths = soundcraft.__path__
     for path in modulepaths:
         path = Path(path)
-        datapath = path / "data" / "dbus-1"
+        datapath = path / "data" / subdir
         result[datapath] = []
         for f in datapath.glob("**/*"):
             if f.is_dir():
@@ -209,12 +211,15 @@ def serviceExePath():
     return exename
 
 
-def setup(cfgroot=Path("/usr/share/dbus-1")):
+SCALABLE_ICONDIR = Path("/usr/local/share/icons/hicolor/scalable/apps/")
+
+
+def setup_dbus(cfgroot=Path("/usr/share/dbus-1")):
     templateData = {
         "dbus_service_bin": str(serviceExePath()),
         "busname": BUSNAME,
     }
-    sources = findDbusFiles()
+    sources = findDataFiles("dbus-1")
     for (srcpath, files) in sources.items():
         for f in files:
             src = srcpath / f
@@ -231,7 +236,37 @@ def setup(cfgroot=Path("/usr/share/dbus-1")):
     print(f"Run soundcraft_gui or soundcraft_cli as a regular user")
 
 
-def uninstall(cfgroot=Path("/usr/share/dbus-1")):
+def setup_xdg():
+    sources = findDataFiles("xdg")
+    for (srcpath, files) in sources.items():
+        for f in files:
+            src = srcpath / f
+            if src.suffix == ".desktop":
+                subprocess.run(["xdg-desktop-menu", "install", "--novendor", str(src)])
+            elif src.suffix == ".png":
+                for size in (16, 24, 32, 48, 256):
+                    subprocess.run(
+                        [
+                            "xdg-icon-resource",
+                            "install",
+                            "--novendor",
+                            "--size",
+                            str(size),
+                            str(src),
+                        ]
+                    )
+            elif src.suffix == ".svg":
+                SCALABLE_ICONDIR.mkdir(parents=True, exist_ok=True)
+                shutil.copy(src, SCALABLE_ICONDIR)
+    print(f"Installed all xdg application launcher files")
+
+
+def setup():
+    setup_dbus()
+    setup_xdg()
+
+
+def uninstall_dbus(cfgroot=Path("/usr/share/dbus-1")):
     try:
         client = Client()
         print(f"Shutting down service version {client.serviceVersion()}")
@@ -239,7 +274,7 @@ def uninstall(cfgroot=Path("/usr/share/dbus-1")):
         print(f"Stopped")
     except Exception:
         print("Service not running")
-    sources = findDbusFiles()
+    sources = findDataFiles("dbus-1")
     for (srcpath, files) in sources.items():
         for f in files:
             path = cfgroot / f
@@ -249,6 +284,30 @@ def uninstall(cfgroot=Path("/usr/share/dbus-1")):
             except Exception as e:
                 print(e)
     print(f"Dbus service is unregistered")
+
+
+def uninstall_xdg():
+    sources = findDataFiles("xdg")
+    for (srcpath, files) in sources.items():
+        for f in files:
+            print(f"Uninstalling {f.name}")
+            if f.suffix == ".desktop":
+                subprocess.run(["xdg-desktop-menu", "uninstall", "--novendor", f.name])
+            elif f.suffix == ".png":
+                for size in (16, 24, 32, 48, 256):
+                    subprocess.run(
+                        ["xdg-icon-resource", "uninstall", "--size", str(size), f.name]
+                    )
+            elif f.suffix == ".svg":
+                svg = SCALABLE_ICONDIR / f.name
+                if svg.exists():
+                    svg.unlink()
+    print(f"Removed all xdg application launcher files")
+
+
+def uninstall():
+    uninstall_dbus()
+    uninstall_xdg()
 
 
 class DbusInitializationError(RuntimeError):

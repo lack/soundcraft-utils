@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=soundcraft-utils
+Comment=A tool for setting up inner routing of Soundcraft Notepad devices
+Exec=soundcraft_gui
+Icon=soundcraft-utils
+Terminal=false
+Categories=Multimedia;AudioVideo;Player;Recorder;
