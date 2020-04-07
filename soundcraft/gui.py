@@ -1,17 +1,31 @@
 import sys
 import traceback
+from pathlib import Path
 
 import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
-from .dbus import Client, DbusInitializationError, VersionIncompatibilityError
+import soundcraft
+from soundcraft.dbus import Client, DbusInitializationError, VersionIncompatibilityError
+
+
+def iconFile():
+    modulepaths = soundcraft.__path__
+    for path in modulepaths:
+        png = Path(path) / "data" / "xdg" / "soundcraft-utils.png"
+        if png.exists():
+            return str(png)
+    return None
 
 
 class App(Gtk.Window):
     def __init__(self):
         super().__init__(title="Soundcraft-utils")
+        icon = iconFile()
+        if icon is not None:
+            self.set_default_icon_from_file(icon)
         self.connect("destroy", Gtk.main_quit)
         self.grid = None
         self.dev = None
