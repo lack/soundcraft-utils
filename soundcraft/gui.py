@@ -6,6 +6,7 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
+from gi.repository import Gio
 
 import soundcraft
 from soundcraft.dbus import Client, DbusInitializationError, VersionIncompatibilityError
@@ -20,13 +21,14 @@ def iconFile():
     return None
 
 
-class App(Gtk.Window):
-    def __init__(self):
-        super().__init__(title="Soundcraft-utils")
+class Main(Gtk.ApplicationWindow):
+    def __init__(self, app):
+        super().__init__(title="Soundcraft-utils", application=app)
+        self.app = app
         icon = iconFile()
         if icon is not None:
             self.set_default_icon_from_file(icon)
-        self.connect("destroy", Gtk.main_quit)
+        self.connect("destroy", self.app.quit_cb)
         self.grid = None
         self.dev = None
         self.setNoDevice()
@@ -65,7 +67,7 @@ class App(Gtk.Window):
                 "Dbus service version incompatibility",
                 "Restart of this gui application is required",
             )
-            Gtk.main_quit()
+            self.app.quit()
             # Todo: Can we relaunch ourselves?
 
     def setDevice(self, dev):
@@ -184,12 +186,42 @@ class App(Gtk.Window):
         self.resetButton.set_sensitive(enabled)
 
 
+class App(Gtk.Application):
+    def __init__(self):
+        super().__init__(application_id="soundcraft.utils")
+        self.window = None
+
+    def do_activate(self):
+        if self.window is not None:
+            return
+        try:
+            self.window = Main(self)
+        except DbusInitializationError:
+            self.quit()
+        except Exception as e:
+            print("Unexpected exception at gui startup")
+            traceback.print_exc()
+            self.quit()
+
+    def quit_cb(self, *args, **kwargs):
+        self.quit()
+
+    def do_startup(self):
+        Gtk.Application.do_startup(self)
+        self.set_app_menu(Gio.Menu())
+        self.addAppmenu("Quit", self.quit_cb)
+
+    def addAppmenu(self, name, cb):
+        actionName = name.lower()
+        self.get_app_menu().append(name, f"app.{actionName}")
+        action = Gio.SimpleAction(name=actionName)
+        action.connect("activate", cb)
+        self.add_action(action)
+
+
 def main():
-    try:
-        App()
-    except Exception:
-        sys.exit(1)
-    Gtk.main()
+    app = App()
+    sys.exit(app.run(sys.argv))
 
 
 if __name__ == "__main__":
