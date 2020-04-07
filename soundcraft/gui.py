@@ -186,6 +186,24 @@ class Main(Gtk.ApplicationWindow):
         self.resetButton.set_sensitive(enabled)
 
 
+class About(Gtk.AboutDialog):
+    def __init__(self):
+        super().__init__(
+            program_name="soundcraft-utils",
+            version=soundcraft.__version__,
+            comments="Linux Utilities for Soundcraft Mixers",
+            license_type=Gtk.License.MIT_X11,
+            website="https://github.com/lack/soundcraft-utils",
+            website_label="Github page",
+            authors=["Jim Ramsay <i.am@jimramsay.com>"],
+            artists=["Flat Icons https://www.flaticon.com/authors/flat-icons"],
+        )
+        self.connect("response", self.close_cb)
+
+    def close_cb(self, action, parameter):
+        action.close()
+
+
 class App(Gtk.Application):
     def __init__(self):
         super().__init__(application_id="soundcraft.utils")
@@ -203,12 +221,17 @@ class App(Gtk.Application):
             traceback.print_exc()
             self.quit()
 
+    def about_cb(self, action, parameter):
+        about = About()
+        about.show()
+
     def quit_cb(self, *args, **kwargs):
         self.quit()
 
     def do_startup(self):
         Gtk.Application.do_startup(self)
         self.set_app_menu(Gio.Menu())
+        self.addAppmenu("About", self.about_cb)
         self.addAppmenu("Quit", self.quit_cb)
 
     def addAppmenu(self, name, cb):
