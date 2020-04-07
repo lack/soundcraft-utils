@@ -138,6 +138,8 @@ class Service:
         if dev is None:
             print(f"No recognised device was found")
             return
+        # Reset any stored state
+        dev.resetState()
         path = self.objPath(0)
         wrapped = NotepadDbus(dev)
         self.object = self.bus.register_object(path, wrapped, None)

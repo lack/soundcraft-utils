@@ -41,6 +41,12 @@ class NotepadBase:
     def found(self):
         return self.dev is not None
 
+    def resetState(self):
+        storedSource = self.routingSource
+        if storedSource == "UNKNOWN":
+            return
+        self.routingSource = storedSource
+
     @property
     def routingSource(self):
         if "source" not in self.state:
