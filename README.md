@@ -15,6 +15,7 @@ USB capture channel routing to Linux users.
 Supported models:
 - Notepad-12FX
 - Notepad-8FX
+- Notepad-5
 
 Prerequisites
 -------------
@@ -114,7 +115,5 @@ TODO
 
 - Polkit restrictions on the dbus service
 - Multiple device support
-- Add additional model support
-    - Notepad-5 should be easy, once I know what the USB idProduct field is (plus I'd need help from someone with a Notepad-5 for testing)
 - Auto-duck feature
 - Firmware upgrade

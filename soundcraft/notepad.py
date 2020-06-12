@@ -142,12 +142,10 @@ class Notepad_8fx(NotepadBase):
 
 class Notepad_5(NotepadBase):
     def __init__(self):
-        # TODO: What is the idProduct of the Notepad 5?
-        super().__init__(idProduct=0x0000, routingTarget="capture_1_2")
+        super().__init__(idProduct=0x0030, routingTarget="capture_1_2")
 
     class Sources(enum.IntEnum):
-        # TODO: Confirm this mapping on real hardware
-        INPUT_1_2 = 0
-        INPUT_2_3 = 1
-        INPUT_4_5 = 2
+        MONO_1_MONO_2 = 0
+        STEREO_2_3 = 1
+        STEREO_4_5 = 2
         MASTER_L_R = 3
