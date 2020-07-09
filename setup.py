@@ -34,7 +34,5 @@ setup(
         ],
         "gui_scripts": ["soundcraft_gui=soundcraft.gui:main"],
     },
-    package_data={
-        "soundcraft": ["data/*/*/*", "data/*/*"]
-    },
+    package_data={"soundcraft": ["data/*/*/*", "data/*/*"]},
 )

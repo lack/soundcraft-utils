@@ -11,6 +11,9 @@ pydbus = "*"
 black = "*"
 flake8 = "*"
 isort = "*"
+pytest = "*"
+tox = "*"
+tox-pyenv = "*"
 
 [pipenv]
 allow_prereleases = true

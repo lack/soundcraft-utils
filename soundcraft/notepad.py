@@ -6,20 +6,19 @@ import os
 import usb.core
 
 
-def autodetect():
+DEFAULT_STATEDIR = "/var/lib/soundcraft-utils"
+
+
+def autodetect(stateDir=DEFAULT_STATEDIR):
     for devType in ("12fx", "8fx", "5"):
-        dev = eval(f"Notepad_{devType}()")
+        dev = eval(f"Notepad_{devType}(stateDir=stateDir)")
         if dev.found():
             return dev
 
 
 class NotepadBase:
     def __init__(
-        self,
-        idProduct,
-        routingTarget,
-        stateDir="/var/lib/soundcraft-utils",
-        fixedRouting={},
+        self, idProduct, routingTarget, stateDir=DEFAULT_STATEDIR, fixedRouting={},
     ):
         self.routingTarget = routingTarget
         self.fixedRouting = fixedRouting
@@ -60,8 +59,10 @@ class NotepadBase:
         if source is None:
             raise ValueError(f"Requested input {request} is not a valid choice")
         print(f"Switching USB audio input to {source.name}")
+        # Reverse engineered via Wireshark on Windows
         # 0 => 0x00 00 04 00 00 00 00 00
         # 1 => 0x00 00 04 00 01 00 00 00
+        #        Change this -^
         message = array.array("B", [0x00, 0x00, 0x04, 0x00, source, 0x00, 0x00, 0x00])
         print(f"Sending {message}")
         self.dev.ctrl_transfer(0x40, 16, 0, 0, message)
@@ -84,18 +85,25 @@ class NotepadBase:
         self.info1 = self.dev.ctrl_transfer(0xA1, 1, 0x0100, 0x2900, 256)
         self.info2 = self.dev.ctrl_transfer(0xA1, 2, 0x0100, 0x2900, 256)
 
-    def _parseSourcename(self, string):
+    def _parseSourcename(self, request):
         sources = self.Sources
+        if isinstance(request, self.Sources):
+            return request
+        if isinstance(request, int):
+            return sources(request)
         try:
-            num = int(string)
-            return sources(num)
+            num = int(request)
+            return self._parseSourcename(num)
         except ValueError:
             try:
-                return sources[string]
+                return sources[request]
             except KeyError:
                 for source in sources:
-                    if string in source.name:
+                    # This could be better; maybe ensure it's a unique substring?
+                    if str(request) in source.name:
                         return source
+        except Exception:
+            pass
         return None
 
     def _saveState(self):
@@ -115,11 +123,12 @@ class NotepadBase:
 
 
 class Notepad_12fx(NotepadBase):
-    def __init__(self):
+    def __init__(self, **kwargs):
         super().__init__(
             idProduct=0x0032,
             routingTarget="capture_3_4",
             fixedRouting={"capture_1_2": "INPUT_1_2"},
+            **kwargs,
         )
 
     class Sources(enum.IntEnum):
@@ -130,8 +139,8 @@ class Notepad_12fx(NotepadBase):
 
 
 class Notepad_8fx(NotepadBase):
-    def __init__(self):
-        super().__init__(idProduct=0x0031, routingTarget="capture_1_2")
+    def __init__(self, **kwargs):
+        super().__init__(idProduct=0x0031, routingTarget="capture_1_2", **kwargs)
 
     class Sources(enum.IntEnum):
         INPUT_1_2 = 0
@@ -141,8 +150,8 @@ class Notepad_8fx(NotepadBase):
 
 
 class Notepad_5(NotepadBase):
-    def __init__(self):
-        super().__init__(idProduct=0x0030, routingTarget="capture_1_2")
+    def __init__(self, **kwargs):
+        super().__init__(idProduct=0x0030, routingTarget="capture_1_2", **kwargs)
 
     class Sources(enum.IntEnum):
         MONO_1_MONO_2 = 0
