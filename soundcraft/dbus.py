@@ -170,10 +170,10 @@ class Service:
 
     def uevent(self, observer, action, device):
         if action == "add":
-            idVendor = device.get_property("ID_VENDOR_ID")
-            idProduct = device.get_property("ID_PRODUCT_ID")
-            if idVendor == "05fc":
-                print(f"Checking new Soundcraft device ({idVendor}:{idProduct})...")
+            idVendor = int(device.get_property("ID_VENDOR_ID"), 16)
+            idProduct = int(device.get_property("ID_PRODUCT_ID"), 16)
+            if idVendor == soundcraft.notepad.HARMAN_USB:
+                print(f"Checking new Soundcraft device ({idVendor:0>4x}:{idProduct:0>4x})...")
                 self.tryRegister()
                 if not self.hasDevice():
                     print(

@@ -7,6 +7,7 @@ import usb.core
 
 
 DEFAULT_STATEDIR = "/var/lib/soundcraft-utils"
+HARMAN_USB = 0x05fc
 
 
 def autodetect(stateDir=DEFAULT_STATEDIR):
@@ -23,7 +24,7 @@ class NotepadBase:
         self.routingTarget = routingTarget
         self.fixedRouting = fixedRouting
         self.stateDir = stateDir
-        self.dev = usb.core.find(idVendor=0x05FC, idProduct=idProduct)
+        self.dev = usb.core.find(idVendor=HARMAN_USB, idProduct=idProduct)
         if self.dev is not None:
             major = self.dev.bcdDevice >> 8
             minor = self.dev.bcdDevice & 0xFF
