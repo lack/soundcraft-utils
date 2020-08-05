@@ -233,7 +233,7 @@ def setup_dbus(cfgroot=Path("/usr/share/dbus-1")):
     client = Client()
     print(f"Version running: {client.serviceVersion()}")
     print(f"Setup is complete")
-    print(f"Run soundcraft_gui or soundcraft_cli as a regular user")
+    print(f"Run soundcraft_gui or soundcraft_ctl as a regular user")
 
 
 def setup_xdg():
