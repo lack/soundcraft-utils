@@ -195,7 +195,12 @@ class About(Gtk.AboutDialog):
             license_type=Gtk.License.MIT_X11,
             website="https://github.com/lack/soundcraft-utils",
             website_label="Github page",
-            authors=["Jim Ramsay <i.am@jimramsay.com>"],
+            authors=[
+                "Jim Ramsay <i.am@jimramsay.com> - Author",
+                "Christoph <soffioalcuore@posteo.net> - Testing and suggestions",
+                "Pete Merges <pdmerges@gmail.com> - Notepad-8FX support and testing",
+                "Viktor Mastoridis <viktor.mastoridis@gmail.com> - Notepad-5 support and testing",
+            ],
             artists=["Flat Icons https://www.flaticon.com/authors/flat-icons"],
         )
         self.connect("response", self.close_cb)
