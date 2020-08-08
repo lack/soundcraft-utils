@@ -7,7 +7,7 @@ import usb.core
 
 
 DEFAULT_STATEDIR = "/var/lib/soundcraft-utils"
-HARMAN_USB = 0x05fc
+HARMAN_USB = 0x05FC
 
 
 def autodetect(stateDir=DEFAULT_STATEDIR):

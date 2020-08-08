@@ -216,7 +216,7 @@ class App(Gtk.Application):
             self.window = Main(self)
         except DbusInitializationError:
             self.quit()
-        except Exception as e:
+        except Exception:
             print("Unexpected exception at gui startup")
             traceback.print_exc()
             self.quit()
