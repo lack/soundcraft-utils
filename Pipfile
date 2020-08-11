@@ -6,12 +6,14 @@ name = "pypi"
 [packages]
 pyusb = "*"
 pydbus = "*"
+jack-client = "*"
 
 [dev-packages]
 black = "*"
 flake8 = "*"
 isort = "*"
 pytest = "*"
+pytest-mock = "*"
 tox = "*"
 tox-pyenv = "*"
 

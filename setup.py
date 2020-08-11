@@ -27,7 +27,7 @@ setup(
         "Topic :: Multimedia :: Sound/Audio :: Mixers",
     ],
     python_requires=">=3.6",
-    install_requires=["pyusb", "pydbus"],
+    install_requires=["pyusb", "pydbus", "jack-client"],
     entry_points={
         "console_scripts": [
             "soundcraft_ctl=soundcraft.cli:main",

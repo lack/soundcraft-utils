@@ -40,10 +40,16 @@ def autodetect(stateDir=DEFAULT_STATEDIR):
 
 class NotepadBase:
     def __init__(
-        self, idProduct, routingTarget, stateDir=DEFAULT_STATEDIR, fixedRouting=[],
+        self,
+        idProduct,
+        routingTarget,
+        stateDir=DEFAULT_STATEDIR,
+        fixedRouting=[],
+        playbackLabels=[],
     ):
         self.routingTarget = routingTarget
         self.fixedRouting = fixedRouting
+        self.playbackLabels = playbackLabels
         self.stateDir = stateDir
         self.dev = usb.core.find(idVendor=HARMAN_USB, idProduct=idProduct)
         if self.dev is not None:
@@ -144,6 +150,10 @@ class NotepadBase:
             pass
 
 
+def label_pair(base, start):
+    return (f"{base}{start}", f"{base}{start+1}")
+
+
 def stereo_label(base):
     return (f"{base} L", f"{base} R")
 
@@ -152,8 +162,12 @@ class Notepad_12fx(NotepadBase):
     def __init__(self, **kwargs):
         super().__init__(
             idProduct=0x0032,
-            routingTarget=("capture_3", "capture_4"),
-            fixedRouting=[(("capture_1", "capture_2"), ("Mic/Line 1", "Mic/Line 2"))],
+            routingTarget=label_pair("capture_", 3),
+            fixedRouting=[(label_pair("capture_", 1), label_pair("Mic/Line ", 1))],
+            playbackLabels=[
+                (label_pair("playback_", 1), stereo_label("Stereo 9/10")),
+                (label_pair("playback_", 3), stereo_label("USB-3/4")),
+            ],
             **kwargs,
         )
 
@@ -164,7 +178,7 @@ class Notepad_12fx(NotepadBase):
         MASTER_L_R = 3
 
     Label = {
-        Sources.INPUT_3_4: ("Mic/Line 3", "Mic/Line 4"),
+        Sources.INPUT_3_4: label_pair("Mic/Line ", 3),
         Sources.INPUT_5_6: stereo_label("Stereo 5/6"),
         Sources.INPUT_7_8: stereo_label("Stereo 7/8"),
         Sources.MASTER_L_R: stereo_label("Mix"),
@@ -174,7 +188,10 @@ class Notepad_12fx(NotepadBase):
 class Notepad_8fx(NotepadBase):
     def __init__(self, **kwargs):
         super().__init__(
-            idProduct=0x0031, routingTarget=("capture_1", "capture_2"), **kwargs
+            idProduct=0x0031,
+            routingTarget=label_pair("capture_", 1),
+            playbackLabels=[(label_pair("playback_", 1), stereo_label("Stereo 7/8"))],
+            **kwargs,
         )
 
     class Sources(enum.IntEnum):
@@ -184,7 +201,7 @@ class Notepad_8fx(NotepadBase):
         MASTER_L_R = 3
 
     Label = {
-        Sources.INPUT_1_2: ("Mic/Line 1", "Mic/Line 2"),
+        Sources.INPUT_1_2: label_pair("Mic/Line ", 1),
         Sources.INPUT_3_4: stereo_label("Stereo 3/4"),
         Sources.INPUT_5_6: stereo_label("Stereo 5/6"),
         Sources.MASTER_L_R: stereo_label("Mix"),
@@ -194,7 +211,10 @@ class Notepad_8fx(NotepadBase):
 class Notepad_5(NotepadBase):
     def __init__(self, **kwargs):
         super().__init__(
-            idProduct=0x0030, routingTarget=("capture_1", "capture_2"), **kwargs
+            idProduct=0x0030,
+            routingTarget=label_pair("capture_", 1),
+            playbackLabels=[(label_pair("playback_", 1), stereo_label("Stereo 4/5"))],
+            **kwargs,
         )
 
     class Sources(enum.IntEnum):

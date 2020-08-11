@@ -31,6 +31,7 @@ from gi.repository import Gtk
 from gi.repository import Gio
 
 import soundcraft
+import soundcraft.jacksync
 from soundcraft.dbus import Client, DbusInitializationError, VersionIncompatibilityError
 
 
@@ -118,6 +119,8 @@ class Main(Gtk.ApplicationWindow):
         self.sourceCombo.add_attribute(renderer_text, "text", 1)
         self.sourceCombo.connect("changed", self.selectionChanged)
         self.addRow(self.dev.routingTarget, self.sourceCombo)
+        self.addSep()
+        self.addSettings()
         self.addActions()
         self.reset()
         self.show_all()
@@ -185,6 +188,15 @@ class Main(Gtk.ApplicationWindow):
         )
         self.row += 1
 
+    def addSettings(self):
+        box = Gtk.HBox()
+        self.grid.attach(box, 0, self.row, 3, 1)
+        self.row += 1
+        self.jackSwitch = Gtk.Switch()
+        self.jackSwitch.connect("state-set", self.jack_toggle)
+        box.pack_start(Gtk.Label("Rename jack ports"), False, False, 0)
+        box.pack_start(self.jackSwitch, False, False, 0)
+
     def addActions(self):
         self.actions = Gtk.ActionBar()
         self.grid.attach(self.actions, 0, self.row, 3, 1)
@@ -203,13 +215,25 @@ class Main(Gtk.ApplicationWindow):
     def apply(self, button=None):
         print(f"Setting routing source to {self.nextSelection}")
         self.dev.routingSource = self.nextSelection
+        if self.jackSwitch.get_state():
+            soundcraft.jacksync.rename_all(self.dev)
         self.setActionsEnabled(False)
 
     def reset(self, button=None, *args, **kwargs):
         for (i, source) in enumerate(self.dev.sources.items()):
             if self.dev.routingSource == source[0]:
                 self.sourceCombo.set_active(i)
+        self.jackSwitch.set_state(soundcraft.jacksync.is_renamed())
         self.setActionsEnabled(False)
+
+    def jack_toggle(self, switch, state):
+        if self.dev is None:
+            return False
+        if state:
+            soundcraft.jacksync.rename_all(self.dev)
+        else:
+            soundcraft.jacksync.reset_all()
+        return False
 
     def setActionsEnabled(self, enabled):
         self.applyButton.set_sensitive(enabled)

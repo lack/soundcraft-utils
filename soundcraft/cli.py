@@ -97,8 +97,14 @@ def main():
     parser.add_argument(
         "-s", "--set", help="Set the specified source to route to the USB capture input"
     )
+    parser.add_argument(
+        "-j",
+        "--jack",
+        help="Synchronize jack port names based (may be used in conjunction with -s)",
+        action="store_true",
+    )
     args = parser.parse_args()
-    if args.list or args.set:
+    if args.list or args.set or args.jack:
         dev = autodetect(dbus=not args.no_dbus)
         if dev is None:
             print(f"No compatible device detected")
@@ -112,6 +118,10 @@ def main():
                 print(f"Run -l to list the valid choices")
                 sys.exit(1)
         show(dev)
+        if args.jack:
+            from .jacksync import rename_all
+
+            rename_all(dev)
     else:
         parser.print_help()
 
