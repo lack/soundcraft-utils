@@ -18,6 +18,7 @@ setup(
     author="Jim Ramsay",
     author_email="i.am@jimramsay.com",
     url="https://github.com/lack/soundcraft-utils",
+    license='MIT',
     packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
