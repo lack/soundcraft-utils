@@ -93,7 +93,7 @@ class NotepadBase:
 
     @property
     def sources(self):
-        return [x.name for x in self.Sources]
+        return {x.name: self.Label[x] for x in self.Sources}
 
     @property
     def name(self):
@@ -149,7 +149,7 @@ class Notepad_12fx(NotepadBase):
         super().__init__(
             idProduct=0x0032,
             routingTarget="capture_3_4",
-            fixedRouting={"capture_1_2": "INPUT_1_2"},
+            fixedRouting={"capture_1_2": "Mic Inputs 1+2"},
             **kwargs,
         )
 
@@ -158,6 +158,13 @@ class Notepad_12fx(NotepadBase):
         INPUT_5_6 = 1
         INPUT_7_8 = 2
         MASTER_L_R = 3
+
+    Label = {
+        Sources.INPUT_3_4: "Mic Inputs 3+4",
+        Sources.INPUT_5_6: "Stereo Input 5+6",
+        Sources.INPUT_7_8: "Stereo Input 7+8",
+        Sources.MASTER_L_R: "Mix L+R",
+    }
 
 
 class Notepad_8fx(NotepadBase):
@@ -170,6 +177,13 @@ class Notepad_8fx(NotepadBase):
         INPUT_5_6 = 2
         MASTER_L_R = 3
 
+    Label = {
+        Sources.INPUT_1_2: "Mic Inputs 1+2",
+        Sources.INPUT_3_4: "Stereo Input 3+4",
+        Sources.INPUT_5_6: "Stereo Input 5+6",
+        Sources.MASTER_L_R: "Mix L+R",
+    }
+
 
 class Notepad_5(NotepadBase):
     def __init__(self, **kwargs):
@@ -180,3 +194,10 @@ class Notepad_5(NotepadBase):
         STEREO_2_3 = 1
         STEREO_4_5 = 2
         MASTER_L_R = 3
+
+    Label = {
+        Sources.MONO_1_MONO_2: "Mic Input 1 & Mono line input 2",
+        Sources.STEREO_2_3: "Stereo Inputs 2+3",
+        Sources.STEREO_4_5: "Stereo Inputs 4+5",
+        Sources.MASTER_L_R: "Mix L+R",
+    }

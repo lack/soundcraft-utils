@@ -108,10 +108,13 @@ class Main(Gtk.ApplicationWindow):
         for (target, source) in self.dev.fixedRouting.items():
             self.addRow(target, source)
             self.addSep()
-        self.sourceCombo = Gtk.ComboBoxText()
-        self.sourceCombo.set_entry_text_column(0)
-        for source in self.dev.sources:
-            self.sourceCombo.append_text(source)
+        sourceData = Gtk.ListStore(str, str)
+        for source in self.dev.sources.items():
+            sourceData.append(source)
+        self.sourceCombo = Gtk.ComboBox(model=sourceData)
+        renderer_text = Gtk.CellRendererText()
+        self.sourceCombo.pack_start(renderer_text, True)
+        self.sourceCombo.add_attribute(renderer_text, "text", 1)
         self.sourceCombo.connect("changed", self.selectionChanged)
         self.addRow(self.dev.routingTarget, self.sourceCombo)
         self.addActions()
@@ -188,7 +191,8 @@ class Main(Gtk.ApplicationWindow):
         self.applyButton.connect("clicked", self.apply)
 
     def selectionChanged(self, comboBox):
-        self.nextSelection = comboBox.get_active_text()
+        i = comboBox.get_active_iter()
+        self.nextSelection = comboBox.get_model()[i][0]
         self.setActionsEnabled(self.nextSelection != self.dev.routingSource)
 
     def apply(self, button=None):
@@ -197,8 +201,8 @@ class Main(Gtk.ApplicationWindow):
         self.setActionsEnabled(False)
 
     def reset(self, button=None, *args, **kwargs):
-        for (i, source) in enumerate(self.dev.sources):
-            if self.dev.routingSource == source:
+        for (i, source) in enumerate(self.dev.sources.items()):
+            if self.dev.routingSource == source[0]:
                 self.sourceCombo.set_active(i)
         self.setActionsEnabled(False)
 

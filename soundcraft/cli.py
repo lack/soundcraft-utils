@@ -44,22 +44,35 @@ def autodetect(dbus=True):
 
 
 def show(dev):
-    print("-" * 30)
+    target_length = len(dev.routingTarget)
+    source_length = 0
     for (target, source) in dev.fixedRouting.items():
-        print(f"{target} <- {source}")
-        print("-" * 30)
-    for (i, source) in enumerate(dev.sources):
+        target_length = max(target_length, len(target))
+        source_length = max(source_length, len(source))
+    for source in dev.sources.values():
+        source_length = max(source_length, len(source))
+    table_width = target_length + 4 + source_length + 4
+    print("-" * table_width)
+    for (target, source) in dev.fixedRouting.items():
+        print(f"{target:<{target_length}} <- {source}")
+        print("-" * table_width)
+    target = dev.routingTarget.ljust(target_length)
+    notarget = " " * target_length
+    for (i, source) in enumerate(dev.sources.items()):
+        sep = "  "
         if dev.routingSource is None or dev.routingSource == "UNKNOWN":
+            sep = "??"
             if i == 0:
-                selected = f"{dev.routingTarget} ??"
+                selected = target
             else:
-                selected = f"{' '*12}??"
-        elif dev.routingSource == source:
-            selected = f"{dev.routingTarget} <-"
+                selected = notarget
+        elif dev.routingSource == source[0]:
+            selected = target
+            sep = "<-"
         else:
-            selected = " " * 14
-        print(f"{selected} {source:<10} [{i}]")
-    print("-" * 30)
+            selected = notarget
+        print(f"{selected} {sep} {source[1]:<{source_length}} [{i}]")
+    print("-" * table_width)
 
 
 def main():

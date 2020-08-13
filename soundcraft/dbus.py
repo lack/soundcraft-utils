@@ -52,7 +52,7 @@ class NotepadDbus(object):
           <property name='name' type='s' access='read' />
           <property name='fixedRouting' type='a{ss}' access='read' />
           <property name='routingTarget' type='s' access='read' />
-          <property name='sources' type='as' access='read' />
+          <property name='sources' type='a{ss}' access='read' />
           <property name='routingSource' type='s' access='readwrite'>
             <annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="true"/>
           </property>
