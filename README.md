@@ -64,6 +64,7 @@ sudo pip install -U soundcraft-utils
 sudo soundcraft_dbus_service --setup
 ```
 
+
 ### Uninstallation
 
 You can remove the dbus and xdg files first by running the following as root:
@@ -77,6 +78,16 @@ Then remove the package with pip:
 ```bash
 sudo pip uninstall soundcraft-utils
 ```
+
+### Prepared Packages
+
+#### Arch Linux, Manjaro
+soundcraft-utils are available in [AUR](https://aur.archlinux.org/packages/soundcraft-utils/): 
+
+```bash
+yay -S soundcraft-utils
+```
+
 
 Usage
 -----
