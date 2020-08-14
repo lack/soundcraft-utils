@@ -43,35 +43,41 @@ def autodetect(dbus=True):
         return npdetect()
 
 
-def show(dev):
-    target_length = len(dev.routingTarget)
-    source_length = 0
-    for (target, source) in dev.fixedRouting.items():
-        target_length = max(target_length, len(target))
-        source_length = max(source_length, len(source))
+def max_lengths(dev):
+    target_len = max([len(x) for x in dev.routingTarget])
+    source_len = 0
     for source in dev.sources.values():
-        source_length = max(source_length, len(source))
-    table_width = target_length + 4 + source_length + 4
+        source_len = max(source_len, *[len(x) for x in source])
+    for (target, source) in dev.fixedRouting:
+        target_len = max(target_len, *[len(x) for x in target])
+        source_len = max(source_len, *[len(x) for x in source])
+    return (target_len, source_len)
+
+
+def show(dev):
+    (target_len, source_len) = max_lengths(dev)
+    table_width = target_len + 4 + source_len + 4
     print("-" * table_width)
-    for (target, source) in dev.fixedRouting.items():
-        print(f"{target:<{target_length}} <- {source}")
+    for (target, source) in dev.fixedRouting:
+        for i in range(0, len(target)):
+            print(f"{target[i]:<{target_len}} <- {source[i]}")
         print("-" * table_width)
-    target = dev.routingTarget.ljust(target_length)
-    notarget = " " * target_length
+    target = [x.ljust(target_len) for x in dev.routingTarget]
+    notarget = (" " * target_len, " " * target_len)
     for (i, source) in enumerate(dev.sources.items()):
         sep = "  "
+        input = [x.ljust(source_len) for x in source[1]]
         if dev.routingSource is None or dev.routingSource == "UNKNOWN":
             sep = "??"
-            if i == 0:
-                selected = target
-            else:
-                selected = notarget
+            selected = target if i == 0 else notarget
         elif dev.routingSource == source[0]:
             selected = target
             sep = "<-"
         else:
             selected = notarget
-        print(f"{selected} {sep} {source[1]:<{source_length}} [{i}]")
+        for j in range(0, len(selected)):
+            idx = f"[{i}]" if j == 0 else ""
+            print(f"{selected[j]} {sep} {input[j]} {idx}")
     print("-" * table_width)
 
 

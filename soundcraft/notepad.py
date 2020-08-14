@@ -40,7 +40,7 @@ def autodetect(stateDir=DEFAULT_STATEDIR):
 
 class NotepadBase:
     def __init__(
-        self, idProduct, routingTarget, stateDir=DEFAULT_STATEDIR, fixedRouting={},
+        self, idProduct, routingTarget, stateDir=DEFAULT_STATEDIR, fixedRouting=[],
     ):
         self.routingTarget = routingTarget
         self.fixedRouting = fixedRouting
@@ -144,12 +144,16 @@ class NotepadBase:
             pass
 
 
+def stereo_label(base):
+    return (f"{base} L", f"{base} R")
+
+
 class Notepad_12fx(NotepadBase):
     def __init__(self, **kwargs):
         super().__init__(
             idProduct=0x0032,
-            routingTarget="capture_3_4",
-            fixedRouting={"capture_1_2": "Mic Inputs 1+2"},
+            routingTarget=("capture_3", "capture_4"),
+            fixedRouting=[(("capture_1", "capture_2"), ("Mic/Line 1", "Mic/Line 2"))],
             **kwargs,
         )
 
@@ -160,16 +164,18 @@ class Notepad_12fx(NotepadBase):
         MASTER_L_R = 3
 
     Label = {
-        Sources.INPUT_3_4: "Mic Inputs 3+4",
-        Sources.INPUT_5_6: "Stereo Input 5+6",
-        Sources.INPUT_7_8: "Stereo Input 7+8",
-        Sources.MASTER_L_R: "Mix L+R",
+        Sources.INPUT_3_4: ("Mic/Line 3", "Mic/Line 4"),
+        Sources.INPUT_5_6: stereo_label("Stereo 5/6"),
+        Sources.INPUT_7_8: stereo_label("Stereo 7/8"),
+        Sources.MASTER_L_R: stereo_label("Mix"),
     }
 
 
 class Notepad_8fx(NotepadBase):
     def __init__(self, **kwargs):
-        super().__init__(idProduct=0x0031, routingTarget="capture_1_2", **kwargs)
+        super().__init__(
+            idProduct=0x0031, routingTarget=("capture_1", "capture_2"), **kwargs
+        )
 
     class Sources(enum.IntEnum):
         INPUT_1_2 = 0
@@ -178,16 +184,18 @@ class Notepad_8fx(NotepadBase):
         MASTER_L_R = 3
 
     Label = {
-        Sources.INPUT_1_2: "Mic Inputs 1+2",
-        Sources.INPUT_3_4: "Stereo Input 3+4",
-        Sources.INPUT_5_6: "Stereo Input 5+6",
-        Sources.MASTER_L_R: "Mix L+R",
+        Sources.INPUT_1_2: ("Mic/Line 1", "Mic/Line 2"),
+        Sources.INPUT_3_4: stereo_label("Stereo 3/4"),
+        Sources.INPUT_5_6: stereo_label("Stereo 5/6"),
+        Sources.MASTER_L_R: stereo_label("Mix"),
     }
 
 
 class Notepad_5(NotepadBase):
     def __init__(self, **kwargs):
-        super().__init__(idProduct=0x0030, routingTarget="capture_1_2", **kwargs)
+        super().__init__(
+            idProduct=0x0030, routingTarget=("capture_1", "capture_2"), **kwargs
+        )
 
     class Sources(enum.IntEnum):
         MONO_1_MONO_2 = 0
@@ -196,8 +204,8 @@ class Notepad_5(NotepadBase):
         MASTER_L_R = 3
 
     Label = {
-        Sources.MONO_1_MONO_2: "Mic Input 1 & Mono line input 2",
-        Sources.STEREO_2_3: "Stereo Inputs 2+3",
-        Sources.STEREO_4_5: "Stereo Inputs 4+5",
-        Sources.MASTER_L_R: "Mix L+R",
+        Sources.MONO_1_MONO_2: ("Mic/Line 1", "Mono Line 2"),
+        Sources.STEREO_2_3: stereo_label("Stereo 2/3"),
+        Sources.STEREO_4_5: stereo_label("Stereo 4/5"),
+        Sources.MASTER_L_R: stereo_label("Mix"),
     }

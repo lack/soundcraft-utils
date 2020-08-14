@@ -22,6 +22,7 @@
 import sys
 import traceback
 from pathlib import Path
+from collections.abc import Iterable
 
 import gi
 
@@ -105,12 +106,12 @@ class Main(Gtk.ApplicationWindow):
         self.row = 0
         self.addHeading(self.dev.name)
         self.addSep()
-        for (target, source) in self.dev.fixedRouting.items():
-            self.addRow(target, source)
+        for (targets, sources) in self.dev.fixedRouting:
+            self.addRow(targets, sources)
             self.addSep()
         sourceData = Gtk.ListStore(str, str)
         for source in self.dev.sources.items():
-            sourceData.append(source)
+            sourceData.append([source[0], "\n".join(source[1])])
         self.sourceCombo = Gtk.ComboBox(model=sourceData)
         renderer_text = Gtk.CellRendererText()
         self.sourceCombo.pack_start(renderer_text, True)
@@ -149,30 +150,34 @@ class Main(Gtk.ApplicationWindow):
         self.grid.attach(section, 0, self.row, 3, 1)
         self.row += 1
 
+    def _wrap_as_widget(self, item):
+        if not isinstance(item, Gtk.Widget):
+            if type(item) is not str and isinstance(item, Iterable):
+                item = "\n".join(item)
+            item = Gtk.Label(label=item)
+        return item
+
     def addRow(self, left, right):
-        if type(left) == str:
-            left = Gtk.Label(label=left)
+        left = self._wrap_as_widget(left)
         left.set_margin_top(10)
         left.set_margin_bottom(10)
         left.set_margin_start(10)
         left.set_margin_end(2)
-        self.grid.attach(left, 0, self.row, 1, 1)
-        self.grid.attach(
-            Gtk.Image.new_from_icon_name("pan-start", Gtk.IconSize.BUTTON),
-            1,
-            self.row,
-            1,
-            1,
-        )
-        if type(right) == str:
-            right = Gtk.Label(label=right)
+        self.grid.attach(left, 0, self.row, 1, 2)
+        img = Gtk.Image.new_from_icon_name("pan-start", Gtk.IconSize.BUTTON)
+        img.set_valign(Gtk.Align.END)
+        self.grid.attach(img, 1, self.row, 1, 1)
+        img = Gtk.Image.new_from_icon_name("pan-start", Gtk.IconSize.BUTTON)
+        img.set_valign(Gtk.Align.START)
+        self.grid.attach(img, 1, self.row + 1, 1, 1)
+        right = self._wrap_as_widget(right)
         right.set_margin_top(10)
         right.set_margin_bottom(10)
         right.set_margin_end(10)
         right.set_margin_start(2)
         right.set_halign(Gtk.Align.START)
-        self.grid.attach(right, 2, self.row, 1, 1)
-        self.row += 1
+        self.grid.attach(right, 2, self.row, 1, 2)
+        self.row += 2
 
     def addSep(self):
         self.grid.attach(
