@@ -63,13 +63,14 @@ FLAKE8_IGNORE += D104
 FLAKE8_IGNORE += D106
 FLAKE8_IGNORE += D107
 
-# Docstring contents
-FLAKE8_IGNORE += D200
+# The DBUS XML in the class docstrings in notepad/dbus.py is a bit
+# weird for a docstring, so we need to ignore a few errors:
+#
+#   * D205 1 blank line required between summary line and description
+#   * D208 Docstring is over-indented
+#   * D400 First line should end with a period
 FLAKE8_IGNORE += D205
 FLAKE8_IGNORE += D208
-
-# The DBUS XML in the docstrings cannot have the first line ending in
-# a period, so we need to ignore D400.
 FLAKE8_IGNORE += D400
 
 FLAKE8_FLAGS += --extend-ignore=$(shell echo "$(sort $(FLAKE8_IGNORE))" | tr ' ' ,)
