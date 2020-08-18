@@ -35,6 +35,7 @@ except ModuleNotFoundError:
     raise
 gi.require_version("GUdev", "1.0")
 from gi.repository import GLib, GUdev
+
 from pydbus import SystemBus
 from pydbus.generic import signal
 

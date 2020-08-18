@@ -2,7 +2,9 @@ import array
 from unittest.mock import DEFAULT, MagicMock, patch
 
 import pytest
+
 import usb.core
+
 from soundcraft import notepad
 
 

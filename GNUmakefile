@@ -48,7 +48,7 @@ ALL_TARGETS += $(SOURCES.md:.md=.html)
 
 # Import sequence and formatting
 FLAKE8_IGNORE += I100
-FLAKE8_IGNORE += I201
+# FLAKE8_IGNORE += I201
 
 # I202 makes flake8 complain about a newline added by black. Have
 # flake8 ignore it to allow a consistent state of affairs.
