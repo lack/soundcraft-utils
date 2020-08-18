@@ -67,6 +67,9 @@ FLAKE8_IGNORE += D107
 FLAKE8_IGNORE += D200
 FLAKE8_IGNORE += D205
 FLAKE8_IGNORE += D208
+
+# The DBUS XML in the docstrings cannot have the first line ending in
+# a period, so we need to ignore D400.
 FLAKE8_IGNORE += D400
 
 FLAKE8_FLAGS += --extend-ignore=$(shell echo "$(sort $(FLAKE8_IGNORE))" | tr ' ' ,)
