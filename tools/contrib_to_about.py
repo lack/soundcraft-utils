@@ -1,7 +1,7 @@
 #!/bin/env python3
 
-import re
 import os
+import re
 
 author_format = re.compile(
     r"^- \[(?P<name>[^]]+)]\(mailto:(?P<email>[^)]+)\)(?P<description>.*)"

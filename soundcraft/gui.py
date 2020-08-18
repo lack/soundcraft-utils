@@ -21,14 +21,14 @@
 
 import sys
 import traceback
-from pathlib import Path
 from collections.abc import Iterable
+from pathlib import Path
 
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
 from gi.repository import Gio
+from gi.repository import Gtk
 
 import soundcraft
 from soundcraft.dbus import Client, DbusInitializationError, VersionIncompatibilityError

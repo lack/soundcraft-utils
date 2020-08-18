@@ -5,7 +5,7 @@ import pytest
 
 import usb.core
 
-from soundcraft import notepad
+from soundcraft import notepad  # noqa: I100
 
 
 class UsbCoreMock:
