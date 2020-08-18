@@ -10,3 +10,6 @@ ignore =
     E501,
     E402,
     F541,
+    # I202 makes flake8 complain about a newline which black insists
+    # on adding. So we have flake8 ignore it to avoid flapping.
+    I202,
