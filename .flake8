@@ -13,3 +13,12 @@ ignore =
     # I202 makes flake8 complain about a newline which black insists
     # on adding. So we have flake8 ignore it to avoid flapping.
     I202,
+    # The DBUS XML in the class docstrings in notepad/dbus.py is a bit
+    # weird for a docstring, so we need to ignore a few errors:
+    #
+    #   * D205 1 blank line required between summary line and description
+    #   * D208 Docstring is over-indented
+    #   * D400 First line should end with a period
+    D205,
+    D208,
+    D400,
