@@ -38,6 +38,12 @@ check: all check-local
 # The actual targets to be hooked into the well-known targets
 ########################################################################
 
+SOURCES.md = $(wildcard *.md)
+ALL_TARGETS += $(SOURCES.md:.md=.html)
+%.html: %.md
+	$(MARKDOWN) -o $@ $<
+
+
 # TODO: Eventually, there should be no FLAKE8_IGNORE content at all.
 
 # Import sequence and formatting

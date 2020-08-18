@@ -6,3 +6,5 @@ pypi.*key
 /Pipfile.lock
 /.tox/
 .eggs
+
+/*.html
