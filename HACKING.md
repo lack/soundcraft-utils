@@ -22,3 +22,22 @@ Notes for those wanting to help out
 - Add yourself to the [`CONTRIBUTORS.md`](CONTRIBUTORS.html) file if you
   want, but if you do, please also run `tools/contrib_to_about.py` to
   synchronize the changes in there to the GUI about screen.
+
+
+Interfaces, Namespaces, Specifications
+======================================
+
+This lists and links to (at least some) interfaces, namespaces, and
+specifications which `soundcraft-utils` comes into contact with.
+
+  * [DBUS](https://dbus.freedesktop.org/doc/dbus-specification.html)
+
+  * [Desktop Entry Specification](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html)
+
+    The `.desktop` file hooks the `soundcraft_gui` GUI application
+    into the desktop environment's list of applications.
+
+  * [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html)
+
+    This specifies the locations the soundcraft-utils Desktop file and
+    icons should be installed to.
