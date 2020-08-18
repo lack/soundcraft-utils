@@ -44,6 +44,12 @@ ALL_TARGETS += $(SOURCES.md:.md=.html)
 	$(MARKDOWN) -o $@ $<
 
 
+CHECK_SOURCES += soundcraft/
+CHECK_SOURCES += setup.py
+CHECK_SOURCES += test/
+CHECK_SOURCES += tools/
+
+
 # TODO: Eventually, there should be no FLAKE8_IGNORE content at all.
 
 # Import sequence and formatting
@@ -78,13 +84,13 @@ FLAKE8_FLAGS += --extend-ignore=$(shell echo "$(sort $(FLAKE8_IGNORE))" | tr ' '
 ALL_TARGETS += run-flake8
 .PHONY: run-flake8
 run-flake8:
-	$(FLAKE8) $(FLAKE8_FLAGS)
+	$(FLAKE8) $(FLAKE8_FLAGS) $(CHECK_SOURCES)
 
 
 ALL_TARGETS += run-black
 .PHONY: run-black
 run-black:
-	$(BLACK) .
+	$(BLACK) $(BLACK_FLAGS) $(CHECK_SOURCES)
 
 
 CHECK_TARGETS += check-pytest
