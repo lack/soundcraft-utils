@@ -47,7 +47,7 @@ ALL_TARGETS += $(SOURCES.md:.md=.html)
 # TODO: Eventually, there should be no FLAKE8_IGNORE content at all.
 
 # Import sequence and formatting
-FLAKE8_IGNORE += I100
+# FLAKE8_IGNORE += I100
 # FLAKE8_IGNORE += I201
 
 # I202 makes flake8 complain about a newline added by black. Have
