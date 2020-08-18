@@ -1,8 +1,8 @@
-build/
-dist/
-*.egg-info/
-__pycache__
+/build/
+/dist/
+/*.egg-info/
+__pycache__/
 pypi.*key
-Pipfile.lock
-.tox
+/Pipfile.lock
+/.tox/
 .eggs
