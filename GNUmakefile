@@ -50,6 +50,12 @@ CHECK_SOURCES += test/
 CHECK_SOURCES += tools/
 
 
+ALL_TARGETS += run-contrib-to-about
+.PHONY: run-contrib-to-about
+run-contrib-to-about:
+	$(PYTHON) tools/contrib_to_about.py
+
+
 # TODO: Eventually, there should be no FLAKE8_IGNORE content at all.
 
 # Import sequence and formatting

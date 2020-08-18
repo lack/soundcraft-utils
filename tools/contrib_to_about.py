@@ -1,7 +1,10 @@
 #!/bin/env python3
 
+import hashlib
 import os
 import re
+
+# import subprocess
 
 author_format = re.compile(
     r"^- \[(?P<name>[^]]+)]\(mailto:(?P<email>[^)]+)\)(?P<description>.*)"
@@ -37,6 +40,20 @@ with open("CONTRIBUTORS.md") as contrib:
 print(f"authors={contributors['Contributors']}")
 print(f"artists={contributors['Artwork']}")
 
+
+def write_people(dst, people_group, people_list):
+    if len(people_list) == 0:
+        dst.write(f"            {people_group}=[],\n")
+    elif len(people_list) == 1:
+        person = people_list[0]
+        dst.write(f'            {people_group}=["{person}"],\n')
+    else:
+        dst.write(f"            {people_group}=[\n")
+        for person in people_list:
+            dst.write(f'                "{person}",\n')
+        dst.write(f"            ],\n")
+
+
 gui = "soundcraft/gui.py"
 edited = f"{gui}.edited"
 print(f"Editing {gui}")
@@ -49,14 +66,32 @@ with open(gui) as src, open(edited, "w") as dst:
             mode = "artists"
         if mode == "authors":
             if "]," in line:
-                dst.write(f"authors={contributors['Contributors']},\n")
+                write_people(dst, "authors", contributors["Contributors"])
                 mode = ""
         elif mode == "artists":
             if "]," in line:
-                dst.write(f"artists={contributors['Artwork']},\n")
+                write_people(dst, "artists", contributors["Artwork"])
                 mode = ""
         else:
             dst.write(line)
 
-os.rename(edited, gui)
-os.system(f"black {gui}")
+
+def file_hash(filename):
+    with open(filename, "rb") as file:
+        m = hashlib.sha256()
+        m.update(file.read())
+        d = m.digest()
+        return d
+
+
+hash_edited = file_hash(edited)
+hash_gui = file_hash(gui)
+
+if hash_edited == hash_gui:
+    print(f"Not updating {gui} from {edited} (no changes detected)")
+    os.unlink(edited)
+else:
+    print(f"Update {gui} from {edited} (changes detected)")
+    # subprocess.run(["diff", "-u", gui, edited])
+    os.rename(edited, gui)
+    os.system(f"black {gui}")
