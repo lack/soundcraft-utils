@@ -1,2 +1,9 @@
 [flake8]
+exclude =
+    .git,
+    __pycache__,
+    _root,
+    build,
+    dist,
+    .tox,
 ignore = E501, E402, F541
