@@ -204,8 +204,8 @@ class Service:
                     )
         elif action == "remove" and self.hasDevice():
             # UDEV adds leading 0s to decimal numbers.  They're not octal.  Why??
-            busnum = int(device.get_property("BUSNUM").lstrip("0"))
-            devnum = int(device.get_property("DEVNUM").lstrip("0"))
+            busnum = int(device.get_property("BUSNUM"), 10)
+            devnum = int(device.get_property("DEVNUM"), 10)
             objectdev = self.object._wrapped._dev.dev
             if busnum == objectdev.bus and devnum == objectdev.address:
                 self.unregister()
