@@ -16,6 +16,9 @@ Notes for those wanting to help out
 
 - Run `flake8` and `black` to format your code.
 
+  The soundcraft-utils source code is written to conform to stock
+  `flake8` without any extra plugins installed.
+
 - Add yourself to the [`CONTRIBUTORS.md`](CONTRIBUTORS.html) file if you
   want, but if you do, please also run `tools/contrib_to_about.py` to
   synchronize the changes in there to the GUI about screen.
