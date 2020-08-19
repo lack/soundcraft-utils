@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -6,8 +6,9 @@ from soundcraft import jacksync
 
 
 class MockJackPort:
-    def __init__(self, shortname, aliases):
-        self._shortname = shortname
+    def __init__(self, name, aliases):
+        self.name = name
+        (self._devname, self._shortname) = name.split(":", 2)
         self._aliases = aliases
 
     @property
@@ -35,30 +36,90 @@ class MockJackPort:
 
 
 @pytest.mark.parametrize(
-    "shortname, aliases, expected",
+    "name, aliases, expected",
     [
-        ("capture_1", [], "capture_1"),
-        ("othername", ["playback_2"], "playback_2"),
-        ("capture_3", ["some alias", "playback_4"], "capture_3"),
-        ("othername", [], None),
+        ("Notepad12FX,0,0-out:capture_1", [], "capture_1"),
+        ("Notepad12FX,0,0-out:othername", ["playback_2"], "playback_2"),
+        ("Notepad12FX,0,0-out:capture_3", ["some alias", "playback_4"], "capture_3"),
+        ("Notepad12FX,0,0-out:othername", [], None),
+        ("system:capture_1", ["alsa_pcm:hw:Notepad12FX:out1"], "capture_1"),
+        ("system:playback_2", ["alsa_pcm:hw:Notepad12FX:in2"], "playback_2"),
+        (
+            "system:othername",
+            ["alsa_pcm:hw:Notepad12FX:out3", "capture_3"],
+            "capture_3",
+        ),
     ],
 )
-def test_port_constructor(shortname, aliases, expected):
-    port_mock = MockJackPort(shortname, aliases)
+def test_port_constructor(name, aliases, expected):
+    port_mock = MockJackPort(name, aliases)
     port = jacksync.Port(port_mock)
     assert port.originalname == expected
 
 
 @pytest.mark.parametrize(
+    "name, aliases, expected",
+    [
+        ("Notepad12FX,0,0-out:capture_1", [], True),
+        ("Notepad12FX,0,0-out:othername", ["playback_2"], True),
+        ("Notepad12FX,0,0-out:capture_3", ["some alias", "playback_4"], True),
+        ("Notepad12FX,0,0-out:othername", [], True),
+        ("system:capture_1", ["alsa_pcm:hw:Notepad12FX:out1"], True),
+        ("system:playback_2", ["alsa_pcm:hw:Notepad12FX:in2"], True),
+        ("system:othername", ["alsa_pcm:hw:Notepad12FX:out3", "capture_3"], True),
+        ("system:capture_1", [], False),
+        ("system:capture_1", ["alias1", "alias2"], False),
+    ],
+)
+def test_port_is_notepad(name, aliases, expected):
+    port_mock = MockJackPort(name, aliases)
+    port = jacksync.Port(port_mock)
+    assert port.is_notepad() == expected
+
+
+@pytest.mark.parametrize(
     "name, aliases, new_name, expected_aliases",
     [
-        ("alias", ["capture_1"], "alias", ["capture_1"]),
-        ("capture_1", [], "alias", ["capture_1"]),
-        ("capture_1", ["alias"], "alias", ["capture_1"]),
-        ("alias", ["capture_1"], "new alias", ["capture_1"]),
-        ("alias", ["removeme", "capture_1"], "alias", ["capture_1"]),
-        ("capture_1", ["removeme", "alias"], "alias", ["capture_1"]),
-        ("capture_1", ["removeme", "andme"], "alias", ["capture_1"]),
+        ("Notepad12FX,0,0-out:alias", ["capture_1"], "alias", ["capture_1"]),
+        ("Notepad12FX,0,0-out:capture_1", [], "alias", ["capture_1"]),
+        ("Notepad12FX,0,0-out:capture_1", ["alias"], "alias", ["capture_1"]),
+        ("Notepad12FX,0,0-out:alias", ["capture_1"], "new alias", ["capture_1"]),
+        (
+            "Notepad12FX,0,0-out:alias",
+            ["removeme", "capture_1"],
+            "alias",
+            ["capture_1"],
+        ),
+        (
+            "Notepad12FX,0,0-out:capture_1",
+            ["removeme", "alias"],
+            "alias",
+            ["capture_1"],
+        ),
+        (
+            "Notepad12FX,0,0-out:capture_1",
+            ["removeme", "andme"],
+            "alias",
+            ["capture_1"],
+        ),
+        (
+            "system:capture_1",
+            ["alsa_pcm:hw:Notepad12FX:out1"],
+            "alias",
+            ["alsa_pcm:hw:Notepad12FX:out1", "capture_1"],
+        ),
+        (
+            "system:playback_2",
+            ["alsa_pcm:hw:Notepad12FX:in2", "removeme"],
+            "alias",
+            ["alsa_pcm:hw:Notepad12FX:in2", "playback_2"],
+        ),
+        (
+            "system:alias",
+            ["alsa_pcm:hw:Notepad12FX:out3", "capture_3"],
+            "new alias",
+            ["alsa_pcm:hw:Notepad12FX:out3", "capture_3"],
+        ),
     ],
 )
 def test_port_rename(name, aliases, new_name, expected_aliases):
@@ -70,7 +131,7 @@ def test_port_rename(name, aliases, new_name, expected_aliases):
 
 
 def test_port_rename_none():
-    port_mock = MockJackPort("alias", ["capture_1"])
+    port_mock = MockJackPort("Notepad12FX,0,0-out:alias", ["capture_1"])
     port = jacksync.Port(port_mock)
     port.rename(None)
     assert port_mock.shortname == "alias"
@@ -78,45 +139,90 @@ def test_port_rename_none():
 
 
 @pytest.mark.parametrize(
-    "name, aliases",
+    "name, aliases, expected",
     [
-        ("capture_1", []),
-        ("capture_1", ["alias"]),
-        ("capture_1", ["old1"]),
-        ("capture_1", ["old1", "old2"]),
-        ("alias", ["capture_1"]),
-        ("alias", ["capture_1", "something"]),
+        ("Notepad12FX,0,0-out:capture_1", [], ["alias"]),
+        ("Notepad12FX,0,0-out:capture_1", ["alias"], ["alias"]),
+        ("Notepad12FX,0,0-out:capture_1", ["old1"], ["alias"]),
+        ("Notepad12FX,0,0-out:capture_1", ["old1", "old2"], ["alias"]),
+        ("Notepad12FX,0,0-out:alias", ["capture_1"], ["alias"]),
+        ("Notepad12FX,0,0-out:alias", ["capture_1", "something"], ["alias"]),
+        (
+            "system:capture_1",
+            ["alsa_pcm:hw:Notepad12FX:out1"],
+            ["alsa_pcm:hw:Notepad12FX:out1", "alias"],
+        ),
+        (
+            "system:capture_1",
+            ["alsa_pcm:hw:Notepad12FX:out1", "alias"],
+            ["alsa_pcm:hw:Notepad12FX:out1", "alias"],
+        ),
+        (
+            "system:capture_1",
+            ["alsa_pcm:hw:Notepad12FX:out1", "old alias"],
+            ["alsa_pcm:hw:Notepad12FX:out1", "alias"],
+        ),
+        (
+            "system:alias",
+            ["alsa_pcm:hw:Notepad12FX:out1", "capture_1"],
+            ["alsa_pcm:hw:Notepad12FX:out1", "alias"],
+        ),
     ],
 )
-def test_port_alias(name, aliases):
+def test_port_alias(name, aliases, expected):
     port_mock = MockJackPort(name, aliases)
     port = jacksync.Port(port_mock)
     port.alias("alias")
     assert port_mock.shortname == "capture_1"
-    assert port_mock.aliases == ["alias"]
+    assert port_mock.aliases == expected
 
 
 @pytest.mark.parametrize(
-    "name, aliases",
+    "name, aliases, expected",
     [
-        ("capture_1", []),
-        ("capture_1", ["alias"]),
-        ("capture_1", ["old1"]),
-        ("capture_1", ["old1", "old2"]),
-        ("alias", ["capture_1"]),
-        ("alias", ["capture_1", "something"]),
+        ("Notepad12FX,0,0-out:capture_1", [], []),
+        ("Notepad12FX,0,0-out:capture_1", ["alias"], []),
+        ("Notepad12FX,0,0-out:capture_1", ["old1"], []),
+        ("Notepad12FX,0,0-out:capture_1", ["old1", "old2"], []),
+        ("Notepad12FX,0,0-out:alias", ["capture_1"], []),
+        ("Notepad12FX,0,0-out:alias", ["capture_1", "something"], []),
+        (
+            "system:capture_1",
+            ["alsa_pcm:hw:Notepad12FX:out1"],
+            ["alsa_pcm:hw:Notepad12FX:out1"],
+        ),
+        (
+            "system:capture_1",
+            ["alsa_pcm:hw:Notepad12FX:out1", "alias"],
+            ["alsa_pcm:hw:Notepad12FX:out1"],
+        ),
+        (
+            "system:capture_1",
+            ["alias", "alsa_pcm:hw:Notepad12FX:out1"],
+            ["alsa_pcm:hw:Notepad12FX:out1"],
+        ),
+        (
+            "system:alias",
+            ["alsa_pcm:hw:Notepad12FX:out1", "capture_1"],
+            ["alsa_pcm:hw:Notepad12FX:out1"],
+        ),
+        (
+            "system:alias",
+            ["capture_1", "alsa_pcm:hw:Notepad12FX:out1"],
+            ["alsa_pcm:hw:Notepad12FX:out1"],
+        ),
     ],
 )
-def test_port_reset(name, aliases):
+def test_port_reset(name, aliases, expected):
     port_mock = MockJackPort(name, aliases)
     port = jacksync.Port(port_mock)
     port.reset()
     assert port_mock.shortname == "capture_1"
-    assert port_mock.aliases == []
+    assert port_mock.aliases == expected
 
 
 def test_port_reset_incomplete_port():
-    port_mock = MockJackPort("somename", ["a", "b"])
+    port_mock = MockJackPort("system:somename", ["a", "b"])
     port = jacksync.Port(port_mock)
     port.reset()
     assert port_mock.shortname == "somename"
@@ -126,12 +232,12 @@ def test_port_reset_incomplete_port():
 @pytest.mark.parametrize(
     "name, aliases, expected",
     [
-        ("capture_1", [], False),
-        ("capture_1", ["alias"], True),
-        ("capture_1", ["old1"], True),
-        ("capture_1", ["old1", "old2"], True),
-        ("alias", ["capture_1"], True),
-        ("alias", ["capture_1", "something"], True),
+        ("Notepad12FX,0,0-out:capture_1", [], False),
+        ("Notepad12FX,0,0-out:capture_1", ["alias"], True),
+        ("Notepad12FX,0,0-out:capture_1", ["old1"], True),
+        ("Notepad12FX,0,0-out:capture_1", ["old1", "old2"], True),
+        ("Notepad12FX,0,0-out:alias", ["capture_1"], True),
+        ("Notepad12FX,0,0-out:alias", ["capture_1", "something"], True),
     ],
 )
 def test_port_is_renamed(name, aliases, expected):
@@ -182,9 +288,9 @@ def jacksync_port(mocker):
 def test_notepad_ports(jack_client, jacksync_port):
     inputs = ["foo", "bar"]
     jack_client.get_ports.return_value = inputs
+    jacksync_port.return_value.is_notepad.side_effect = [True, False]
     ports = list(jacksync.notepad_ports(jack_client))
-    assert len(ports) == len(inputs)
-    jacksync_port.assert_has_calls([call(x) for x in inputs])
+    assert len(ports) == 1
 
 
 class PortMocker:
@@ -225,3 +331,12 @@ def test_is_renamed(values, expected, port_mocker):
     for port, value in zip(ports, values):
         port.is_renamed.return_value = value
     assert jacksync.is_renamed() == expected
+
+
+def test_ready_okay(jack_client):
+    assert jacksync.ready()
+
+
+def test_ready_false(mocker):
+    mocker.patch("jack.Client").side_effect = Exception("failed")
+    assert not jacksync.ready()

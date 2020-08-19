@@ -7,11 +7,25 @@ class Port:
         self.names = [self.jack.shortname] + self.jack.aliases
         self.originalname = None
         for name in self.names:
-            # TODO: This works with ubuntu and the way it invokes zita-a2j
-            # Is this universally useful?
             if name.startswith("capture_") or name.startswith("playback_"):
                 self.originalname = name
                 break
+        self.alsa_alias = None
+        for alias in self.jack.aliases:
+            if alias.startswith("alsa"):
+                self.alsa_alias = alias
+
+    def is_notepad(self):
+        # Ubuntu Studio uses zita-a2j with jack, and has the main port named
+        # something like "Notepad12FX,0,0-out:capture_1"
+        # Jack with the notepad as its base device (via alsa) has the primary
+        # port named "system:capture_1" but does have an alias with the
+        # string "Notepad" in it (such as "alsa_pcm:hw:Notepad12FX:out1")
+        if self.jack.name.startswith("Notepad"):
+            return True
+        if self.alsa_alias is not None:
+            return self.alsa_alias.startswith("alsa_pcm:hw:Notepad")
+        return False
 
     def _rename(self, name, alias):
         if name is None:
@@ -23,7 +37,9 @@ class Port:
         if self.jack.shortname != name:
             print(f"Renaming {self.jack.shortname}->{name}")
             self.jack.shortname = name
-        old_aliases = [a for a in self.jack.aliases if a != alias]
+        old_aliases = [
+            a for a in self.jack.aliases if a != alias and a != self.alsa_alias
+        ]
         for old_alias in old_aliases:
             print(f"Removing stale alias {old_alias}")
             self.jack.unset_alias(old_alias)
@@ -70,9 +86,8 @@ def jack_client():
 
 
 def notepad_ports(client):
-    # TODO: This works with ubuntu and the way it invokes zita-a2j
-    # Is this universally useful?
-    return (Port(x) for x in client.get_ports("Notepad.*"))
+    all_ports = (Port(x) for x in client.get_ports(is_physical=True))
+    return (p for p in all_ports if p.is_notepad())
 
 
 def rename_all(dev, do_rename=True):
