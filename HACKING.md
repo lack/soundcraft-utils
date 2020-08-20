@@ -1,9 +1,36 @@
 Notes for those wanting to help out
 ===================================
 
-- Thank you!  I appreciate all feedback, pull requests, and gentle criticism!
+First of all, thank you!  I appreciate all feedback, pull requests, and gentle criticism!
 
-- Open pull requests to the default branch, currently named `release`.
+Development Environment
+-----------------------
+
+To ensure homogeneity of development environments, I recommend
+using `pipenv` and python 3.8 (though python 3.6 is the minimum
+supported version).  pipenv can be installed via pip in the usual
+ways.
+
+### Set up and use pipenv
+
+`pipenv install --dev`
+- Sets up an appropriate virtual environment and installs all
+  appropriate development packages
+
+`pipenv shell`
+- Starts a subshell with the appropriate environment so that the
+  sandboxed libraries and utilities are in use
+
+### Adding new dependencies
+
+`pipenv install [--dev] <pgkname>`
+- Installs the dependency to the local pipenv environment.  Use
+  `--dev` for development-only packages, omit for run-time
+  dependencies.
+
+
+Submitting Changes
+------------------
 
 - Please ensure that `pytest` passes, using `pytest` itself or `tox`.
 
@@ -11,17 +38,20 @@ Notes for those wanting to help out
   getting the feedback from that integrated into the pull requests,
   eventually.
 
-- Try to test new code thoroughly.  I'm working on increasing code
-  coverage as I go as well.
+  Try to test new code thoroughly.  I'm working on increasing code
+  coverage as I go as well.  Use 'pytest' or 'tox' to test.
 
 - Run `flake8` and `black` to format your code.
 
-  The soundcraft-utils source code is written to conform to stock
-  `flake8` without any extra plugins installed.
+  The soundcraft-utils source code is written to conform to stock `flake8`
+  without any extra plugins installed.  Using pipenv (see above) should make
+  sure you have the right set of flake8 plugins installed.
 
 - Add yourself to the [`CONTRIBUTORS.md`](CONTRIBUTORS.html) file if you
   want, but if you do, please also run `tools/contrib_to_about.py` to
   synchronize the changes in there to the GUI about screen.
+
+- Open pull requests to the default branch, currently named `release`.
 
 
 Interfaces, Namespaces, Specifications
