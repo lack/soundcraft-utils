@@ -15,6 +15,7 @@ isort = "*"
 pytest = "*"
 tox = "*"
 tox-pyenv = "*"
+pipenv-setup = "*"
 
 [pipenv]
 allow_prereleases = true

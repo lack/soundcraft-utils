@@ -28,6 +28,7 @@ setup(
     ],
     python_requires=">=3.6",
     install_requires=["pyusb", "pydbus"],
+    dependency_links=[],
     entry_points={
         "console_scripts": [
             "soundcraft_ctl=soundcraft.cli:main",

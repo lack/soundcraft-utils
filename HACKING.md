@@ -28,6 +28,9 @@ ways.
   `--dev` for development-only packages, omit for run-time
   dependencies.
 
+`pipenv-setup sync --pidfile`
+- Syncs any run-time dependencies from pipenv to setup.py
+
 
 Submitting Changes
 ------------------
