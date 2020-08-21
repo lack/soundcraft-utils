@@ -13,23 +13,27 @@ ways.
 
 ### Set up and use pipenv
 
-`pipenv install --dev`
-- Sets up an appropriate virtual environment and installs all
+- `pipenv install --dev`
+
+  Sets up an appropriate virtual environment and installs all
   appropriate development packages
 
-`pipenv shell`
-- Starts a subshell with the appropriate environment so that the
+- `pipenv shell`
+
+  Starts a subshell with the appropriate environment so that the
   sandboxed libraries and utilities are in use
 
 ### Adding new dependencies
 
-`pipenv install [--dev] <pgkname>`
-- Installs the dependency to the local pipenv environment.  Use
+- `pipenv install [--dev] <pgkname>`
+
+  Installs the dependency to the local pipenv environment.  Use
   `--dev` for development-only packages, omit for run-time
   dependencies.
 
-`pipenv-setup sync --pidfile`
-- Syncs any run-time dependencies from pipenv to setup.py
+- `pipenv-setup sync --pidfile`
+
+  Syncs any run-time dependencies from pipenv to setup.py
 
 
 Submitting Changes
