@@ -34,8 +34,10 @@ ways.
   `--dev` for development-only packages, omit for run-time
   dependencies.
 
-`pipenv-setup sync --pidfile`
+`pipenv-setup sync --pipfile`
 - Syncs any run-time dependencies from pipenv to setup.py
+
+  Our pre-commit hooks run this automatically.
 
 
 Submitting Changes

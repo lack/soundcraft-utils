@@ -18,3 +18,10 @@ repos:
     args: [--git-add]
     pass_filenames: false
     files: CONTRIBUTORS.md
+  - id: pipenv-setup
+    name: Sync pipfile dependency changes to setup.py
+    language: system
+    entry: pipenv-setup
+    args: [sync, --pipfile]
+    pass_filenames: false
+    files: Pipfile
