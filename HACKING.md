@@ -62,6 +62,8 @@ Submitting Changes
   want, but if you do, please also run `tools/contrib_to_about.py` to
   synchronize the changes in there to the GUI about screen.
 
+  Our pre-commit hooks will do this for you automatically.
+
 - Open pull requests to the default branch, currently named `release`.
 
 

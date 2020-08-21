@@ -11,3 +11,10 @@ repos:
     language: system
     entry: black
     types: [file, python]
+  - id: contrib
+    name: Update contributors.py from CONTRIBUTORS.md
+    language: system
+    entry:  ./tools/contrib_to_about.py
+    args: [--git-add]
+    pass_filenames: false
+    files: CONTRIBUTORS.md

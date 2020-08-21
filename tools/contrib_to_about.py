@@ -41,6 +41,9 @@ Options:
         Only show the changes which would be done to the python module as
         a `diff -u` patch; never actually change it.
         The exit code will be non-0 if the file would be changed.
+    --git-add
+        If changes were made, automatically stage these changes for
+        commit.
     --help
         Show this message and exit.
 
@@ -58,13 +61,17 @@ import sys
 
 # parse command line (--check and --diff just like the `black` command)
 args = sys.argv[1:]
+flag = set()
 flag_check = False
 flag_diff = False
+flag_git_add = False
 for arg in args:
     if arg == "--check":
         flag_check = True
     elif arg == "--diff":
         flag_diff = True
+    elif arg == "--git-add":
+        flag_git_add = True
     elif arg == "--help":
         sys.stdout.write(__doc__)
         sys.exit(0)
@@ -177,4 +184,6 @@ else:
     else:
         print(f"Update {target_fname} from {new_fname} (changes detected)")
         os.rename(new_fname, target_fname)
+        if flag_git_add:
+            os.system(f"git add {target_fname}")
         sys.exit(0)
