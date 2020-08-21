@@ -52,6 +52,8 @@ Submitting Changes
   Try to test new code thoroughly.  I'm working on increasing code
   coverage as I go as well.  Use 'pytest' or 'tox' to test.
 
+  Our pre-commit hooks ensure pytest is passing on every commit, too.
+
 - Run `flake8` and `black` to format your code.
 
   The soundcraft-utils source code is written to conform to stock `flake8`

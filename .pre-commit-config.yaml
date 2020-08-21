@@ -25,3 +25,10 @@ repos:
     args: [sync, --pipfile]
     pass_filenames: false
     files: Pipfile
+  - id: pytest
+    name: Run unit tests
+    language: system
+    entry: pytest
+    pass_filenames: false
+    files: ^(soundcraft|test)/
+    types: [file, python]
