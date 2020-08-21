@@ -16,6 +16,7 @@ pytest = "*"
 tox = "*"
 tox-pyenv = "*"
 pipenv-setup = "*"
+pre-commit = "*"
 
 [pipenv]
 allow_prereleases = true

@@ -1,0 +1,13 @@
+repos:
+- repo: local
+  hooks:
+  - id: flake8
+    name: Run flake8
+    language: system
+    entry: flake8
+    types: [file, python]
+  - id: black
+    name: Run black code-formatter
+    language: system
+    entry: black
+    types: [file, python]

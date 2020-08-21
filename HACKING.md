@@ -21,6 +21,12 @@ ways.
 - Starts a subshell with the appropriate environment so that the
   sandboxed libraries and utilities are in use
 
+### Set up pre-commit
+
+`pre-commit install` (inside of pipenv shell)
+- Set up git hooks management so every commit gets checked/fixed
+- Only needs to be done once after cloning this repo
+
 ### Adding new dependencies
 
 `pipenv install [--dev] <pgkname>`
@@ -49,6 +55,8 @@ Submitting Changes
   The soundcraft-utils source code is written to conform to stock `flake8`
   without any extra plugins installed.  Using pipenv (see above) should make
   sure you have the right set of flake8 plugins installed.
+
+  Our pre-commit hooks will do this for you automatically.
 
 - Add yourself to the [`CONTRIBUTORS.md`](CONTRIBUTORS.html) file if you
   want, but if you do, please also run `tools/contrib_to_about.py` to
