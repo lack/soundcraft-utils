@@ -17,6 +17,10 @@ ways.
 - Sets up an appropriate virtual environment and installs all
   appropriate development packages
 
+`tools/link_system_libs`
+- Set up a symlink to your system's 'gi' lib which isn't otherwise available
+  via pip (allows you to run the dbus and gui from within pipenv)
+
 `pipenv shell`
 - Starts a subshell with the appropriate environment so that the
   sandboxed libraries and utilities are in use
