@@ -40,8 +40,10 @@ def autodetect(stateDir=DEFAULT_STATEDIR):
 
 class NotepadBase:
     def __init__(
-        self, idProduct, routingTarget, stateDir=DEFAULT_STATEDIR, fixedRouting=[],
+        self, idProduct, routingTarget, stateDir=DEFAULT_STATEDIR, fixedRouting=None,
     ):
+        if fixedRouting is None:
+            fixedRouting = []
         self.routingTarget = routingTarget
         self.fixedRouting = fixedRouting
         self.stateDir = stateDir
