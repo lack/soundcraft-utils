@@ -455,6 +455,11 @@ class Client:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s (soundcraft-utils) {soundcraft.__version__}",
+    )
+    parser.add_argument(
         "--setup",
         help="Set up the dbus configuration in /usr/share/dbus-1 (Must be run as root)",
         action="store_true",

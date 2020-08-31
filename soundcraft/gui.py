@@ -27,6 +27,7 @@ from collections.abc import Iterable
 import gi
 
 gi.require_version("Gtk", "3.0")
+from gi.repository import GLib
 from gi.repository import Gtk
 from gi.repository import Gio
 
@@ -237,8 +238,36 @@ class About(Gtk.AboutDialog):
 
 class App(Gtk.Application):
     def __init__(self):
-        super().__init__(application_id="soundcraft.utils")
+        super().__init__(
+            application_id="soundcraft.utils",
+            flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
+        )
         self.window = None
+
+        self.add_main_option(
+            "version",
+            0,
+            GLib.OptionFlags.NONE,
+            GLib.OptionArg.NONE,
+            "Show program's version number and exit",
+            None,
+        )
+
+    def __cmdline_version(self):
+        prog = Path(sys.argv[0])
+        print(f"{prog.name} (soundcraft-utils) {soundcraft.__version__}")
+        return 0
+
+    def do_command_line(self, command_line):
+        options = command_line.get_options_dict()
+        # convert GVariantDict -> GVariant -> dict
+        options = options.end().unpack()
+
+        if "version" in options:
+            return self.__cmdline_version()
+
+        self.activate()
+        return 0
 
     def do_activate(self):
         if self.window is not None:
