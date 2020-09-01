@@ -1,0 +1,4 @@
+# Soundcraft Notepad 5, Notepad 8FX and Notepad 12FX analog mixers with USB control
+ACTION=="add", SUBSYSTEM=="usb", ATTRS{idVendor}=="05fc", ATTRS{idProduct}=="0030", ENV{DEVNAME}!="", RUN+="/usr/bin/setfacl -m u:someuser:rw '$env{DEVNAME}'"
+ACTION=="add", SUBSYSTEM=="usb", ATTRS{idVendor}=="05fc", ATTRS{idProduct}=="0031", ENV{DEVNAME}!="", RUN+="/usr/bin/setfacl -m u:someuser:rw '$env{DEVNAME}'"
+ACTION=="add", SUBSYSTEM=="usb", ATTRS{idVendor}=="05fc", ATTRS{idProduct}=="0032", ENV{DEVNAME}!="", RUN+="/usr/bin/setfacl -m u:someuser:rw '$env{DEVNAME}'"
