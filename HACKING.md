@@ -74,6 +74,23 @@ Submitting Changes
 
 - Open pull requests to the default branch, currently named `release`.
 
+- Version numbers are semver-like, and reflect more about the DBUS protocol
+  compatibility than anything else:
+
+    - A build bump (0.3.5 -> 0.3.6) is a feature bump.  It can add new things
+      to the dbus interface, but not remove or fundamentally alter existing
+      datastructures.
+
+    - A minor bump (0.3.x -> 0.4.0) implies a dbus incompatibility boundary.
+      This may include changes to pre-existing dbus data structures or remove
+      dbus endpoints.
+
+    - A major bump (0.x.y -> 1.0.0) hasn't happened yet.  Maybe it will some day :)
+
+- The official release schedule is sporadic and ad-hoc (aka when I feel like
+  it).  If you think there's enough in mainline that you want me to kick a
+  release, just send me an email or open an issue.
+
 
 Interfaces, Namespaces, Specifications
 ======================================
