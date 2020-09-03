@@ -22,6 +22,8 @@
 import argparse
 import sys
 
+from . import __version__
+
 
 def autodetect(dbus=True):
     if dbus:
@@ -83,6 +85,11 @@ def show(dev):
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s (soundcraft-utils) {__version__}",
+    )
     parser.add_argument(
         "--no-dbus",
         help="Use direct USB device access instead of DBUS service access",
