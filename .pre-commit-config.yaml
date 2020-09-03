@@ -14,8 +14,8 @@ repos:
   - id: contrib
     name: Update contributors.py from CONTRIBUTORS.md
     language: system
-    entry:  ./tools/contrib_to_about.py
-    args: [--git-add]
+    entry:  python3
+    args: [./tools/contrib_to_about.py, --git-add]
     pass_filenames: false
     files: CONTRIBUTORS.md
   - id: pipenv-setup
