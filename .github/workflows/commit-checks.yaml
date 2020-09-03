@@ -1,0 +1,36 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Re-check pre-commit hooks
+
+on:
+  push:
+    branches: [ release ]
+  pull_request:
+    branches: [ release ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.x
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pipenv
+        pipenv install --dev
+    - name: run commit-hook flake8
+      run: |
+        pipenv run pre-commit run -a flake8
+    - name: run commit-hook black
+      run: |
+        pipenv run pre-commit run -a black
+    - name: run commit-hook contrib
+      run: |
+        pipenv run pre-commit run -a contrib
+    - name: run commit-hook pipenv-setup
+      run: |
+        pipenv run pre-commit run -a pipenv-setup
