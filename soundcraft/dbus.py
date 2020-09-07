@@ -46,7 +46,7 @@ BUSNAME = "soundcraft.utils.notepad"
 
 
 class NotepadDbus(object):
-    """
+    dbus = """
       <node>
         <interface name='soundcraft.utils.notepad.device'>
           <property name='name' type='s' access='read' />
@@ -96,7 +96,7 @@ class NotepadDbus(object):
 
 
 class Service:
-    """
+    dbus = """
       <node>
         <interface name='soundcraft.utils.notepad'>
           <property name='version' type='s' access='read' />
