@@ -49,7 +49,7 @@ class NotepadBase:
             except Exception:
                 # Fall-back to class name, since reading the product over USB requires write access
                 self.product = self.__class__.__name__
-            self.fwVersion = f"{major}.{minor}"
+            self.fwVersion = "%d.%02d" % (major, minor)
             self.stateFile = f"{stateDir}/{self.product}.state"
             self.state = {}
             self._loadState()
