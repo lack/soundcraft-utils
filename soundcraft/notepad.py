@@ -31,13 +31,6 @@ DEFAULT_STATEDIR = "/var/lib/soundcraft-utils"
 HARMAN_USB = 0x05FC
 
 
-def autodetect(stateDir=DEFAULT_STATEDIR):
-    for devType in ("12fx", "8fx", "5"):
-        dev = eval(f"Notepad_{devType}(stateDir=stateDir)")
-        if dev.found():
-            return dev
-
-
 class NotepadBase:
     def __init__(
         self, idProduct, routingTarget, stateDir=DEFAULT_STATEDIR, fixedRouting=None,
@@ -211,3 +204,10 @@ class Notepad_5(NotepadBase):
         Sources.STEREO_4_5: stereo_label("Stereo 4/5"),
         Sources.MASTER_L_R: stereo_label("Mix"),
     }
+
+
+def autodetect(stateDir=DEFAULT_STATEDIR):
+    for devClass in (Notepad_12fx, Notepad_8fx, Notepad_5):
+        dev = devClass(stateDir=stateDir)
+        if dev.found():
+            return dev
