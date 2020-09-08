@@ -49,12 +49,13 @@ class NotepadDbus(object):
     dbus = """
       <node>
         <interface name='soundcraft.utils.notepad.device'>
-          <property name='name' type='s' access='read' />
-          <property name='fixedRouting' type='a((ss)(ss))' access='read' />
-          <property name='routingTarget' type='(ss)' access='read' />
-          <property name='sources' type='a{s(ss)}' access='read' />
-          <property name='routingSource' type='s' access='readwrite'>
-            <annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="true"/>
+          <property name='name'          type='s'           access='read' />
+          <property name='fixedRouting'  type='a((ss)(ss))' access='read' />
+          <property name='routingTarget' type='(ss)'        access='read' />
+          <property name='sources'       type='a{s(ss)}'    access='read' />
+          <property name='routingSource' type='s'           access='readwrite'>
+            <annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal"
+                        value="true"/>
           </property>
         </interface>
       </node>
@@ -99,9 +100,10 @@ class Service:
     dbus = """
       <node>
         <interface name='soundcraft.utils.notepad'>
-          <property name='version' type='s' access='read' />
+          <property name='version' type='s'  access='read' />
           <property name='devices' type='ao' access='read'>
-            <annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="true"/>
+            <annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal"
+                        value="true"/>
           </property>
           <signal name='Added'>
             <arg name='path' type='o'/>
