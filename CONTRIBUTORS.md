@@ -5,6 +5,7 @@ Contributors
 - [Christoph](mailto:soffioalcuore@posteo.net) - Testing and suggestions
 - [Pete Merges](mailto:pdmerges@gmail.com) - Notepad-8FX support and testing
 - [Viktor Mastoridis](mailto:viktor.mastoridis@gmail.com) - Notepad-5 support and testing
+- [Hans Ulrich Niedermann](mailto:hun@ndimensional.de) - System integration
 
 Artwork
 -------

@@ -10,5 +10,6 @@ authors = [
     "Christoph <soffioalcuore@posteo.net> - Testing and suggestions",
     "Pete Merges <pdmerges@gmail.com> - Notepad-8FX support and testing",
     "Viktor Mastoridis <viktor.mastoridis@gmail.com> - Notepad-5 support and testing",
+    "Hans Ulrich Niedermann <hun@ndimensional.de> - System integration",
 ]
 artists = ["Flat Icons https://www.flaticon.com/authors/flat-icons"]
