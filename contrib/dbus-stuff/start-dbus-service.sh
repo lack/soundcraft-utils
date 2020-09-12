@@ -3,6 +3,8 @@
 busctl="busctl"
 
 busname="soundcraft.utils.notepad"
+devinterface="soundcraft.utils.notepad.device"
+devpath="/soundcraft/utils/notepad/0"
 
 set -xe
 
@@ -21,13 +23,10 @@ sleep 2
 # Note that busctl has beautiful bash shell completion for bus names etc.
 
 ${busctl} tree "${busname}"
-${busctl} --no-pager introspect "${busname}" /soundcraft/utils/notepad/0
+${busctl} --no-pager introspect "${busname}" "$devpath"
 
-${busctl} get-property "${busname}" /soundcraft/utils/notepad/0 \
-       soundcraft.utils.notepad.device sources
+${busctl} get-property "${busname}" "$devpath" "$devinterface" sources
 
-${busctl} get-property "${busname}" /soundcraft/utils/notepad/0 \
-       soundcraft.utils.notepad.device routingSource
+${busctl} get-property "${busname}" "$devpath" "$devinterface" routingSource
 
-${busctl} set-property "${busname}" /soundcraft/utils/notepad/0 \
-       soundcraft.utils.notepad.device routingSource s INPUT_7_8
+${busctl} set-property "${busname}" "$devpath" "$devinterface" s INPUT_7_8
