@@ -29,4 +29,4 @@ ${busctl} get-property "${busname}" "$devpath" "$devinterface" sources
 
 ${busctl} get-property "${busname}" "$devpath" "$devinterface" routingSource
 
-${busctl} set-property "${busname}" "$devpath" "$devinterface" s INPUT_7_8
+${busctl} set-property "${busname}" "$devpath" "$devinterface" s MASTER_L_R
