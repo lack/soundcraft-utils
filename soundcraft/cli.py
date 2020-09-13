@@ -33,7 +33,7 @@ def autodetect(dbus=True):
             client = Client()
             result = client.autodetect()
             if result is None:
-                print(f"No devices found... waiting for one to appear")
+                print("No devices found... waiting for one to appear")
                 result = client.waitForDevice()
             return result
         except DbusInitializationError as e:
@@ -108,7 +108,7 @@ def main():
     if args.list or args.set:
         dev = autodetect(dbus=not args.no_dbus)
         if dev is None:
-            print(f"No compatible device detected")
+            print("No compatible device detected")
             sys.exit(1)
         print(f"Detected a {dev.name}")
         if args.set:
@@ -116,7 +116,7 @@ def main():
                 dev.routingSource = args.set
             except ValueError:
                 print(f"Unrecognised input choice {args.set}")
-                print(f"Run -l to list the valid choices")
+                print("Run -l to list the valid choices")
                 sys.exit(1)
         show(dev)
     else:

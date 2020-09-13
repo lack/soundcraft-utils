@@ -132,7 +132,7 @@ class Service:
     def run(self):
         self.tryRegister()
         if not self.hasDevice():
-            print(f"Waiting for one to arrive...")
+            print("Waiting for one to arrive...")
         self.loop.run()
 
     @property
@@ -161,7 +161,7 @@ class Service:
             return
         dev = soundcraft.notepad.autodetect()
         if dev is None:
-            print(f"No recognised device was found")
+            print("No recognised device was found")
             return
         # Reset any stored state
         dev.resetState()
@@ -202,7 +202,7 @@ class Service:
                 self.tryRegister()
                 if not self.hasDevice():
                     print(
-                        f"Contact the developer for help adding support for your advice"
+                        "Contact the developer for help adding support for your device"
                     )
         elif action == "remove" and self.hasDevice():
             # UDEV adds leading 0s to decimal numbers.  They're not octal.  Why??
@@ -257,8 +257,8 @@ def setup_dbus(cfgroot=Path("/usr/share/dbus-1")):
     print(f"Starting service version {soundcraft.__version__}...")
     client = Client()
     print(f"Version running: {client.serviceVersion()}")
-    print(f"D-Bus setup is complete")
-    print(f"Run soundcraft_gui or soundcraft_ctl as a regular user")
+    print("D-Bus setup is complete")
+    print("Run soundcraft_gui or soundcraft_ctl as a regular user")
 
 
 def setup_xdg():
@@ -283,7 +283,7 @@ def setup_xdg():
             elif src.suffix == ".svg":
                 SCALABLE_ICONDIR.mkdir(parents=True, exist_ok=True)
                 shutil.copy(src, SCALABLE_ICONDIR)
-    print(f"Installed all XDG application launcher files")
+    print("Installed all XDG application launcher files")
 
 
 def setup():
@@ -296,7 +296,7 @@ def uninstall_dbus(cfgroot=Path("/usr/share/dbus-1")):
         client = Client()
         print(f"Shutting down service version {client.serviceVersion()}")
         client.shutdown()
-        print(f"Stopped")
+        print("Stopped")
     except Exception:
         print("Service not running")
     sources = findDataFiles("dbus-1")
@@ -308,7 +308,7 @@ def uninstall_dbus(cfgroot=Path("/usr/share/dbus-1")):
                 path.unlink()
             except Exception as e:
                 print(e)
-    print(f"D-Bus service is unregistered")
+    print("D-Bus service is unregistered")
 
 
 def uninstall_xdg():
@@ -327,7 +327,7 @@ def uninstall_xdg():
                 svg = SCALABLE_ICONDIR / f.name
                 if svg.exists():
                     svg.unlink()
-    print(f"Removed all XDG application launcher files")
+    print("Removed all XDG application launcher files")
 
 
 def uninstall():
