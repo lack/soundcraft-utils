@@ -257,7 +257,7 @@ def setup_dbus(cfgroot=Path("/usr/share/dbus-1")):
     print(f"Starting service version {soundcraft.__version__}...")
     client = Client()
     print(f"Version running: {client.serviceVersion()}")
-    print(f"Setup is complete")
+    print(f"D-Bus setup is complete")
     print(f"Run soundcraft_gui or soundcraft_ctl as a regular user")
 
 
@@ -283,7 +283,7 @@ def setup_xdg():
             elif src.suffix == ".svg":
                 SCALABLE_ICONDIR.mkdir(parents=True, exist_ok=True)
                 shutil.copy(src, SCALABLE_ICONDIR)
-    print(f"Installed all xdg application launcher files")
+    print(f"Installed all XDG application launcher files")
 
 
 def setup():
@@ -308,7 +308,7 @@ def uninstall_dbus(cfgroot=Path("/usr/share/dbus-1")):
                 path.unlink()
             except Exception as e:
                 print(e)
-    print(f"Dbus service is unregistered")
+    print(f"D-Bus service is unregistered")
 
 
 def uninstall_xdg():
@@ -327,7 +327,7 @@ def uninstall_xdg():
                 svg = SCALABLE_ICONDIR / f.name
                 if svg.exists():
                     svg.unlink()
-    print(f"Removed all xdg application launcher files")
+    print(f"Removed all XDG application launcher files")
 
 
 def uninstall():
