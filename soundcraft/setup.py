@@ -25,14 +25,32 @@ import argparse
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 from string import Template
 
 
+try:
+    import gi  # noqa: F401 'gi' imported but unused
+except ModuleNotFoundError:
+    print(
+        """
+The PyGI library must be installed from your distribution; usually called
+python-gi, python-gobject, python3-gobject, pygobject, or something similar.
+"""
+    )
+    raise
+
+# We only need the whole gobject and GLib thing here to catch specific exceptions
+from gi.repository.GLib import Error as GLibError
+
+
+import pydbus
+
 import soundcraft
 
 import soundcraft.constants as const
-from soundcraft.dbus import BUSNAME, Client
+from soundcraft.dbus import BUSNAME
 
 
 def findDataFiles(subdir):
@@ -78,9 +96,30 @@ def setup_dbus(cfgroot=Path("/usr/share/dbus-1")):
                 srcTemplate = Template(srcfile.read())
                 with open(dst, "w") as dstfile:
                     dstfile.write(srcTemplate.substitute(templateData))
+
+    bus = pydbus.SystemBus()
+    dbus_service = bus.get(".DBus")
     print(f"Starting service version {soundcraft.__version__}...")
-    client = Client()
-    print(f"Version running: {client.serviceVersion()}")
+
+    # Give the D-Bus a few seconds to notice the new service file
+    timeout = 5
+    while True:
+        try:
+            dbus_service.StartServiceByName(BUSNAME, 0)
+            break  # service has been started, no need to try again
+        except GLibError:
+            # If the bus has not recognized the service config file
+            # yet, the service is not bus activatable yet and thus the
+            # GLibError will happen.
+            if timeout == 0:
+                raise
+            timeout = timeout - 1
+
+            time.sleep(1)
+            continue  # starting service has failed, but try again
+
+    service_version = bus.get(BUSNAME).version
+    print(f"Version running: {service_version}")
     print("D-Bus setup is complete")
     print(f"Run {const.BASE_EXE_GUI} or {const.BASE_EXE_CLI} as a regular user")
 
@@ -116,13 +155,17 @@ def setup():
 
 
 def uninstall_dbus(cfgroot=Path("/usr/share/dbus-1")):
-    try:
-        client = Client()
-        print(f"Shutting down service version {client.serviceVersion()}")
-        client.shutdown()
-        print("Stopped")
-    except Exception:
+    bus = pydbus.SystemBus()
+    dbus_service = bus.get(".DBus")
+    if not dbus_service.NameHasOwner(BUSNAME):
         print("Service not running")
+    else:
+        service = bus.get(BUSNAME)
+        service_version = service.version
+        print(f"Shutting down service version {service_version}")
+        service.Shutdown()
+        print("Stopped")
+
     sources = findDataFiles("dbus-1")
     for (srcpath, files) in sources.items():
         for f in files:
