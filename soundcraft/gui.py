@@ -48,7 +48,7 @@ from soundcraft.dbus import Client, DbusInitializationError, VersionIncompatibil
 def iconFile():
     modulepaths = soundcraft.__path__
     for path in modulepaths:
-        png = Path(path) / "data" / "xdg" / f"{const.APP_ICON}.png"
+        png = Path(path) / "data" / "xdg" / f"{const.APP_ICON}.256.png"
         if png.exists():
             return str(png)
     return None

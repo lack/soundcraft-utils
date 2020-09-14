@@ -228,7 +228,9 @@ class SetupXDGDesktop(AbstractSetup):
                     dst.write_text(srcTemplate.substitute(templateData))
                     dst.chmod(mode=0o644)
                 elif src.suffix == ".png":
-                    size = 256  # The only PNG file at this time is 256x256
+                    size_suffix = src.suffixes[-2]
+                    assert size_suffix.startswith(".")
+                    size = int(size_suffix[1:], 10)
                     dst = self.icondir(size) / f"{const.APP_ICON}.png"
                     print("Installing", dst)
                     dst.parent.mkdir(mode=0o755, parents=True, exist_ok=True)
@@ -256,7 +258,9 @@ class SetupXDGDesktop(AbstractSetup):
                     except FileNotFoundError:
                         pass  # No dst file to remove
                 elif src.suffix == ".png":
-                    size = 256  # The only PNG file at this time is 256x256
+                    size_suffix = src.suffixes[-2]
+                    assert size_suffix.startswith(".")
+                    size = int(size_suffix[1:], 10)
                     dst = self.icondir(size) / f"{const.APP_ICON}.png"
                     print(f"Uninstalling {dst}")
                     try:
