@@ -30,7 +30,10 @@ try:
     import gi
 except ModuleNotFoundError:
     print(
-        "\nThe PyGI library must be installed from your distribution; usually called python-gi, python-gobject, or pygobject\n"
+        """
+The PyGI library must be installed from your distribution; usually called
+python-gi, python-gobject, python3-gobject, pygobject, or something similar.
+"""
     )
     raise
 gi.require_version("GUdev", "1.0")

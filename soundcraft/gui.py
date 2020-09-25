@@ -24,8 +24,16 @@ import traceback
 from pathlib import Path
 from collections.abc import Iterable
 
-import gi
-
+try:
+    import gi
+except ModuleNotFoundError:
+    print(
+        """
+The PyGI library must be installed from your distribution; usually called
+python-gi, python-gobject, python3-gobject, pygobject, or something similar.
+"""
+    )
+    raise
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib
 from gi.repository import Gtk
