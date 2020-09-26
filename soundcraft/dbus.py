@@ -43,6 +43,7 @@ from pydbus.generic import signal
 
 import soundcraft
 import soundcraft.notepad
+import soundcraft.constants as const
 
 
 BUSNAME = "soundcraft.utils.notepad"
@@ -261,7 +262,7 @@ def setup_dbus(cfgroot=Path("/usr/share/dbus-1")):
     client = Client()
     print(f"Version running: {client.serviceVersion()}")
     print("D-Bus setup is complete")
-    print("Run soundcraft_gui or soundcraft_ctl as a regular user")
+    print(f"Run {const.BASE_EXE_GUI} or {const.BASE_EXE_CLI} as a regular user")
 
 
 def setup_xdg():
@@ -352,7 +353,7 @@ class VersionIncompatibilityError(DbusInitializationError):
 class DbusServiceSetupError(DbusInitializationError):
     def __init__(self):
         super().__init__(
-            f"No D-Bus service found for {BUSNAME} - Run 'soundcraft_dbus_service --setup' as root to enable it"
+            f"No D-Bus service found for {BUSNAME} - Run '{const.BASE_EXE_SERVICE} --setup' as root to enable it"
         )
 
 

@@ -40,6 +40,7 @@ from gi.repository import Gtk
 from gi.repository import Gio
 
 import soundcraft
+import soundcraft.constants as const
 import soundcraft.contributors
 from soundcraft.dbus import Client, DbusInitializationError, VersionIncompatibilityError
 
@@ -68,7 +69,7 @@ class Main(Gtk.ApplicationWindow):
             self.dbus = Client(added_cb=self.deviceAdded, removed_cb=self.deviceRemoved)
         except DbusInitializationError as e:
             print(f"Startup error: {str(e)}")
-            self._startupFailure("Could not start soundcraft_gui", str(e))
+            self._startupFailure(f"Could not start {const.BASE_EXE_GUI}", str(e))
             raise e
         except Exception as e:
             print("Unexpected exception at gui startup")
