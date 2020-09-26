@@ -37,6 +37,7 @@ PACKAGE = "soundcraft-utils"
 BASE_EXE_CLI = "soundcraft_ctl"
 BASE_EXE_GUI = "soundcraft_gui"
 BASE_EXE_SERVICE = "soundcraft_dbus_service"
+BASE_EXE_SETUP = "soundcraft_setup"
 
 
 # Gtk Application ID of the soundcraft-utils GUI

@@ -20,11 +20,6 @@
 # SOFTWARE.
 
 import argparse
-import shutil
-import subprocess
-import sys
-from pathlib import Path
-from string import Template
 
 try:
     import gi
@@ -217,130 +212,8 @@ class Service:
                 self.unregister()
 
 
-def findDataFiles(subdir):
-    result = {}
-    modulepaths = soundcraft.__path__
-    for path in modulepaths:
-        path = Path(path)
-        datapath = path / "data" / subdir
-        result[datapath] = []
-        for f in datapath.glob("**/*"):
-            if f.is_dir():
-                continue
-            result[datapath].append(f.relative_to(datapath))
-    return result
-
-
-def serviceExePath():
-    exename = Path(sys.argv[0]).resolve()
-    if exename.suffix == ".py":
-        raise ValueError(
-            "Running setup out of a module-based execution is not supported"
-        )
-    return exename
-
-
-SCALABLE_ICONDIR = Path("/usr/local/share/icons/hicolor/scalable/apps/")
-
-
-def setup_dbus(cfgroot=Path("/usr/share/dbus-1")):
-    templateData = {
-        "dbus_service_bin": str(serviceExePath()),
-        "busname": BUSNAME,
-    }
-    sources = findDataFiles("dbus-1")
-    for (srcpath, files) in sources.items():
-        for f in files:
-            src = srcpath / f
-            dst = cfgroot / f
-            print(f"Installing {src} -> {dst}")
-            with open(src, "r") as srcfile:
-                srcTemplate = Template(srcfile.read())
-                with open(dst, "w") as dstfile:
-                    dstfile.write(srcTemplate.substitute(templateData))
-    print(f"Starting service version {soundcraft.__version__}...")
-    client = Client()
-    print(f"Version running: {client.serviceVersion()}")
-    print("D-Bus setup is complete")
-    print(f"Run {const.BASE_EXE_GUI} or {const.BASE_EXE_CLI} as a regular user")
-
-
-def setup_xdg():
-    sources = findDataFiles("xdg")
-    for (srcpath, files) in sources.items():
-        for f in files:
-            src = srcpath / f
-            if src.suffix == ".desktop":
-                subprocess.run(["xdg-desktop-menu", "install", "--novendor", str(src)])
-            elif src.suffix == ".png":
-                for size in (16, 24, 32, 48, 256):
-                    subprocess.run(
-                        [
-                            "xdg-icon-resource",
-                            "install",
-                            "--novendor",
-                            "--size",
-                            str(size),
-                            str(src),
-                        ]
-                    )
-            elif src.suffix == ".svg":
-                SCALABLE_ICONDIR.mkdir(parents=True, exist_ok=True)
-                shutil.copy(src, SCALABLE_ICONDIR)
-    print("Installed all XDG application launcher files")
-
-
-def setup():
-    setup_dbus()
-    setup_xdg()
-
-
-def uninstall_dbus(cfgroot=Path("/usr/share/dbus-1")):
-    try:
-        client = Client()
-        print(f"Shutting down service version {client.serviceVersion()}")
-        client.shutdown()
-        print("Stopped")
-    except Exception:
-        print("Service not running")
-    sources = findDataFiles("dbus-1")
-    for (srcpath, files) in sources.items():
-        for f in files:
-            path = cfgroot / f
-            print(f"Removing {path}")
-            try:
-                path.unlink()
-            except Exception as e:
-                print(e)
-    print("D-Bus service is unregistered")
-
-
-def uninstall_xdg():
-    sources = findDataFiles("xdg")
-    for (srcpath, files) in sources.items():
-        for f in files:
-            print(f"Uninstalling {f.name}")
-            if f.suffix == ".desktop":
-                subprocess.run(["xdg-desktop-menu", "uninstall", "--novendor", f.name])
-            elif f.suffix == ".png":
-                for size in (16, 24, 32, 48, 256):
-                    subprocess.run(
-                        ["xdg-icon-resource", "uninstall", "--size", str(size), f.name]
-                    )
-            elif f.suffix == ".svg":
-                svg = SCALABLE_ICONDIR / f.name
-                if svg.exists():
-                    svg.unlink()
-    print("Removed all XDG application launcher files")
-
-
-def uninstall():
-    uninstall_dbus()
-    uninstall_xdg()
-
-
 class DbusInitializationError(RuntimeError):
-    pass
+    pass  # class DbusInitializationError
 
 
 class VersionIncompatibilityError(DbusInitializationError):
@@ -459,27 +332,14 @@ class Client:
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description=f"The {const.PACKAGE} D-Bus service.")
     parser.add_argument(
         "--version",
         action="version",
         version=f"%(prog)s ({const.PACKAGE}) {soundcraft.__version__}",
     )
-    parser.add_argument(
-        "--setup",
-        help="Set up the D-Bus configuration in /usr/share/dbus-1 (Must be run as root)",
-        action="store_true",
-    )
-    parser.add_argument(
-        "--uninstall",
-        help="Remove any setup performed by --setup",
-        action="store_true",
-    )
-    args = parser.parse_args()
-    if args.setup:
-        setup()
-    elif args.uninstall:
-        uninstall()
-    else:
-        service = Service()
-        service.run()
+
+    parser.parse_args()
+
+    service = Service()
+    service.run()
