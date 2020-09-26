@@ -40,6 +40,8 @@ Installation
 
 ### Installation
 
+FIXME05 This section needs to be rewritten for the session dbus
+
 ```bash
 sudo pip install soundcraft-utils
 ```
@@ -61,6 +63,8 @@ unprivileged account.
 
 ### Upgrading
 
+FIXME05 This section needs to be rewritten for the session dbus
+
 Simply update your package from pip, and rerun the 'setup' to ensure
 the D-Bus service is upgraded to the latest version:
 
@@ -71,6 +75,8 @@ sudo soundcraft_dbus_service --setup
 
 
 ### Uninstallation
+
+FIXME05 This section needs to be rewritten for the session dbus
 
 You can remove the D-Bus and xdg files first by running the following as root:
 
