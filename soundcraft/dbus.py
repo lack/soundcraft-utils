@@ -342,14 +342,14 @@ class DbusInitializationError(RuntimeError):
 class VersionIncompatibilityError(DbusInitializationError):
     def __init__(self, serviceVersion, pid, clientVersion):
         super().__init__(
-            f"Running service version {serviceVersion} (PID {pid}) is incompatible with the client version {clientVersion} - Kill and restart the dbus service"
+            f"Running service version {serviceVersion} (PID {pid}) is incompatible with the client version {clientVersion} - Kill and restart the D-Bus service"
         )
 
 
 class DbusServiceSetupError(DbusInitializationError):
     def __init__(self):
         super().__init__(
-            f"No dbus service found for {BUSNAME} - Run 'soundcraft_dbus_service --setup' as root to enable it"
+            f"No D-Bus service found for {BUSNAME} - Run 'soundcraft_dbus_service --setup' as root to enable it"
         )
 
 
@@ -402,7 +402,7 @@ class Client:
 
     def restartService(self, mgrVersion, localVersion):
         print(
-            f"Restarting soundcraft dbus service ({self.servicePid()}) to upgrade {mgrVersion}->{localVersion}"
+            f"Restarting soundcraft D-Bus service ({self.servicePid()}) to upgrade {mgrVersion}->{localVersion}"
         )
         self.shutdown()
         self.initManager()
@@ -463,7 +463,7 @@ def main():
     )
     parser.add_argument(
         "--setup",
-        help="Set up the dbus configuration in /usr/share/dbus-1 (Must be run as root)",
+        help="Set up the D-Bus configuration in /usr/share/dbus-1 (Must be run as root)",
         action="store_true",
     )
     parser.add_argument(

@@ -19,7 +19,7 @@ ways.
 
 `tools/link_system_libs`
 - Set up a symlink to your system's 'gi' lib which isn't otherwise available
-  via pip (allows you to run the dbus and gui from within pipenv)
+  via pip (allows you to run the D-Bus and gui from within pipenv)
 
 `pipenv shell`
 - Starts a subshell with the appropriate environment so that the
@@ -74,16 +74,16 @@ Submitting Changes
 
 - Open pull requests to the default branch, currently named `release`.
 
-- Version numbers are semver-like, and reflect more about the DBUS protocol
+- Version numbers are semver-like, and reflect more about the D-Bus protocol
   compatibility than anything else:
 
     - A build bump (0.3.5 -> 0.3.6) is a feature bump.  It can add new things
-      to the dbus interface, but not remove or fundamentally alter existing
+      to the D-Bus interface, but not remove or fundamentally alter existing
       datastructures.
 
-    - A minor bump (0.3.x -> 0.4.0) implies a dbus incompatibility boundary.
-      This may include changes to pre-existing dbus data structures or remove
-      dbus endpoints.
+    - A minor bump (0.3.x -> 0.4.0) implies a D-Bus incompatibility boundary.
+      This may include changes to pre-existing D-Bus data structures or remove
+      D-Bus endpoints.
 
     - A major bump (0.x.y -> 1.0.0) hasn't happened yet.  Maybe it will some day :)
 
@@ -98,7 +98,7 @@ Interfaces, Namespaces, Specifications
 This lists and links to (at least some) interfaces, namespaces, and
 specifications which `soundcraft-utils` comes into contact with.
 
-  * [DBUS](https://dbus.freedesktop.org/doc/dbus-specification.html)
+  * [D-Bus](https://dbus.freedesktop.org/doc/dbus-specification.html)
 
   * [Desktop Entry Specification](https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html)
 

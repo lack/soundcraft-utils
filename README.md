@@ -20,7 +20,7 @@ Supported models:
 Prerequisites
 -------------
 
-The dbus service relies on [PyGObject](https://pygobject.readthedocs.io/en/latest/index.html)
+The D-Bus service relies on [PyGObject](https://pygobject.readthedocs.io/en/latest/index.html)
 which is not available via pypi without a lot of dev libraries for
 it to compile against.  It is usually easier to install separately
 using your distribution's package installation tools.  Under Ubuntu,
@@ -40,24 +40,24 @@ sudo pip install soundcraft-utils
 ```
 
 It is not recommended to use `--user` mode and install this
-system-wide so that the dbus service auto-start can reliably find the
+system-wide so that the D-Bus service auto-start can reliably find the
 right python libs.
 
-Set up the DBUS service so it can access the system bus and be
+Set up the D-Bus service so it can access the system bus and be
 auto-started on demand:
 
 ```bash
 sudo soundcraft_dbus_service --setup
 ```
 
-The dbus service will run as root, providing access to the underlying
+The D-Bus service will run as root, providing access to the underlying
 USB device so the `soundcraft_ctl` user-facing part can be run by an
 unprivileged account.
 
 ### Upgrading
 
-Simply update your package from pip, and rerun the 'setup' to ensure the dbus
-service is upgraded to the latest version:
+Simply update your package from pip, and rerun the 'setup' to ensure
+the D-Bus service is upgraded to the latest version:
 
 ```bash
 sudo pip install -U soundcraft-utils
@@ -67,7 +67,7 @@ sudo soundcraft_dbus_service --setup
 
 ### Uninstallation
 
-You can remove the dbus and xdg files first by running the following as root:
+You can remove the D-Bus and xdg files first by running the following as root:
 
 ```bash
 sudo soundcraft_dbus_service --uninstall
@@ -124,7 +124,7 @@ udev rules.
 TODO
 ----
 
-- Polkit restrictions on the dbus service
+- Polkit restrictions on the D-Bus service
 - Multiple device support
 - Auto-duck feature
 - Firmware upgrade

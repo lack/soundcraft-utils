@@ -92,7 +92,7 @@ def main():
     )
     parser.add_argument(
         "--no-dbus",
-        help="Use direct USB device access instead of DBUS service access",
+        help="Use direct USB device access instead of D-Bus service access",
         action="store_true",
     )
     parser.add_argument(

@@ -8,19 +8,23 @@ devpath="/soundcraft/utils/notepad/0"
 
 set -xe
 
-# Start the soundcraft-utils dbus service via bus activation on the system bus
+# Start the soundcraft-utils D-Bus service via bus activation on the
+# system bus.
 
 # dbus-send --system --print-reply --dest=org.freedesktop.DBus \
 #	  /org/freedesktop/DBus org.freedesktop.DBus.StartServiceByName \
 #	  "string:${busname}" uint32:0
+
+# Note that busctl has beautiful bash shell completion for bus names
+# etc.
 
 ${busctl} call org.freedesktop.DBus /org/freedesktop/DBus \
        org.freedesktop.DBus StartServiceByName su "${busname}" 0
 
 sleep 2
 
-# See what objects the soundcraft-utils dbus service exposes on the system bus
-# Note that busctl has beautiful bash shell completion for bus names etc.
+# See what objects the soundcraft-utils D-Bus service exposes on the
+# system bus.
 
 ${busctl} tree "${busname}"
 ${busctl} --no-pager introspect "${busname}" "$devpath"

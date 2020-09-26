@@ -88,7 +88,7 @@ class Main(Gtk.ApplicationWindow):
             self.dbus.ensureServiceVersion()
         except VersionIncompatibilityError:
             self._startupFailure(
-                "Dbus service version incompatibility",
+                "D-Bus service version incompatibility",
                 "Restart of this gui application is required",
             )
             self.app.quit()
