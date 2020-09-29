@@ -43,6 +43,14 @@ ways.
 
   Our pre-commit hooks run this automatically.
 
+### Things to avoid in code
+
+For compatibility with Python >= 3.6, avoid the following:
+
+  * The `missing_ok` parameter to several `pathlib.Path` methods (3.8)
+
+  * The `@functools.cached_property` decorator (3.8)
+
 
 Submitting Changes
 ------------------
