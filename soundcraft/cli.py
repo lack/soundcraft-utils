@@ -22,13 +22,13 @@
 import argparse
 import sys
 
-from . import __version__
+from soundcraft import __version__
 
 
 def autodetect(dbus=True):
     if dbus:
         try:
-            from .dbus import Client, DbusInitializationError
+            from soundcraft.dbus import Client, DbusInitializationError
 
             client = Client()
             result = client.autodetect()
@@ -40,9 +40,9 @@ def autodetect(dbus=True):
             print(e)
             sys.exit(2)
     else:
-        from .notepad import autodetect as npdetect
+        import soundcraft.notepad
 
-        return npdetect()
+        return soundcraft.notepad.autodetect()
 
 
 def max_lengths(dev):
