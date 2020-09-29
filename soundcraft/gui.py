@@ -230,7 +230,7 @@ class Main(Gtk.ApplicationWindow):
 class About(Gtk.AboutDialog):
     def __init__(self):
         super().__init__(
-            program_name="soundcraft-utils",
+            program_name=const.PACKAGE,
             version=soundcraft.__version__,
             comments="Linux Utilities for Soundcraft Mixers",
             license_type=Gtk.License.MIT_X11,
@@ -268,7 +268,7 @@ class App(Gtk.Application):
 
     def __cmdline_version(self):
         prog = Path(sys.argv[0])
-        print(f"{prog.name} (soundcraft-utils) {soundcraft.__version__}")
+        print(f"{prog.name} ({const.PACKAGE}) {soundcraft.__version__}")
         return 0
 
     def do_command_line(self, command_line):

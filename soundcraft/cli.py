@@ -22,6 +22,8 @@
 import argparse
 import sys
 
+import soundcraft.constants as const
+
 from soundcraft import __version__
 
 
@@ -88,7 +90,7 @@ def main():
     parser.add_argument(
         "--version",
         action="version",
-        version=f"%(prog)s (soundcraft-utils) {__version__}",
+        version=f"%(prog)s ({const.PACKAGE}) {__version__}",
     )
     parser.add_argument(
         "--no-dbus",

@@ -30,6 +30,9 @@
 #
 ########################################################################
 
+# Package name
+PACKAGE = "soundcraft-utils"
+
 # Executable names
 BASE_EXE_CLI = "soundcraft_ctl"
 BASE_EXE_GUI = "soundcraft_gui"

@@ -22,7 +22,7 @@ with open("README.md", "rb") as fh:
     long_description = fh.read().decode("utf-8")
 
 setup(
-    name="soundcraft-utils",
+    name=const.PACKAGE,
     version=version,
     description="Soundcraft Notepad control utilities",
     long_description=long_description,
