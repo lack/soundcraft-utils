@@ -248,7 +248,11 @@ class App(Gtk.Application):
     def __init__(self):
         super().__init__(
             application_id="soundcraft.utils",
-            flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
+            flags=(
+                0
+                | Gio.ApplicationFlags.HANDLES_COMMAND_LINE  # noqa: W503
+                | Gio.ApplicationFlags.NON_UNIQUE  # noqa: W503
+            ),
         )
         self.window = None
 
