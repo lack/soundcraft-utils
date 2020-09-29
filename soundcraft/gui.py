@@ -48,7 +48,7 @@ from soundcraft.dbus import Client, DbusInitializationError, VersionIncompatibil
 def iconFile():
     modulepaths = soundcraft.__path__
     for path in modulepaths:
-        png = Path(path) / "data" / "xdg" / "soundcraft-utils.png"
+        png = Path(path) / "data" / "xdg" / f"{const.APP_ICON}.png"
         if png.exists():
             return str(png)
     return None
@@ -248,7 +248,7 @@ class About(Gtk.AboutDialog):
 class App(Gtk.Application):
     def __init__(self):
         super().__init__(
-            application_id="soundcraft.utils",
+            application_id=const.APPLICATION_ID,
             flags=(
                 0
                 | Gio.ApplicationFlags.HANDLES_COMMAND_LINE  # noqa: W503

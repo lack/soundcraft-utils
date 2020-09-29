@@ -37,3 +37,9 @@ PACKAGE = "soundcraft-utils"
 BASE_EXE_CLI = "soundcraft_ctl"
 BASE_EXE_GUI = "soundcraft_gui"
 BASE_EXE_SERVICE = "soundcraft_dbus_service"
+
+
+# Gtk Application ID of the soundcraft-utils GUI
+# https://developer.gnome.org/gio/stable/GApplication.html#g-application-id-is-valid
+APPLICATION_ID = "soundcraft.utils"
+APP_ICON = "soundcraft-utils"
