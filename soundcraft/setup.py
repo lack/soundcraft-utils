@@ -81,7 +81,7 @@ def serviceExePath():
 SCALABLE_ICONDIR = Path("/usr/local/share/icons/hicolor/scalable/apps/")
 
 
-def setup_dbus(cfgroot=Path("/usr/share/dbus-1")):
+def install_dbus(cfgroot=Path("/usr/share/dbus-1")):
     templateData = {
         "dbus_service_bin": str(serviceExePath()),
         "busname": BUSNAME,
@@ -120,11 +120,11 @@ def setup_dbus(cfgroot=Path("/usr/share/dbus-1")):
 
     service_version = bus.get(BUSNAME).version
     print(f"Version running: {service_version}")
-    print("D-Bus setup is complete")
+    print("D-Bus installation is complete")
     print(f"Run {const.BASE_EXE_GUI} or {const.BASE_EXE_CLI} as a regular user")
 
 
-def setup_xdg():
+def install_xdg():
     sources = findDataFiles("xdg")
     for (srcpath, files) in sources.items():
         for f in files:
@@ -149,9 +149,9 @@ def setup_xdg():
     print("Installed all XDG application launcher files")
 
 
-def setup():
-    setup_dbus()
-    setup_xdg()
+def install():
+    install_dbus()
+    install_xdg()
 
 
 def uninstall_dbus(cfgroot=Path("/usr/share/dbus-1")):
@@ -228,6 +228,6 @@ def main():
 
     args = parser.parse_args()
     if args.install:
-        setup()
+        install()
     elif args.uninstall:
         uninstall()
