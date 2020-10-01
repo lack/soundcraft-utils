@@ -22,27 +22,27 @@
 import argparse
 import sys
 
-from . import __version__
+from soundcraft import __version__
 
 
 def autodetect(dbus=True):
     if dbus:
         try:
-            from .dbus import Client, DbusInitializationError
+            from soundcraft.dbus import Client, DbusInitializationError
 
             client = Client()
             result = client.autodetect()
             if result is None:
-                print(f"No devices found... waiting for one to appear")
+                print("No devices found... waiting for one to appear")
                 result = client.waitForDevice()
             return result
         except DbusInitializationError as e:
             print(e)
             sys.exit(2)
     else:
-        from .notepad import autodetect as npdetect
+        import soundcraft.notepad
 
-        return npdetect()
+        return soundcraft.notepad.autodetect()
 
 
 def max_lengths(dev):
@@ -92,7 +92,7 @@ def main():
     )
     parser.add_argument(
         "--no-dbus",
-        help="Use direct USB device access instead of DBUS service access",
+        help="Use direct USB device access instead of D-Bus service access",
         action="store_true",
     )
     parser.add_argument(
@@ -108,7 +108,7 @@ def main():
     if args.list or args.set:
         dev = autodetect(dbus=not args.no_dbus)
         if dev is None:
-            print(f"No compatible device detected")
+            print("No compatible device detected")
             sys.exit(1)
         print(f"Detected a {dev.name}")
         if args.set:
@@ -116,7 +116,7 @@ def main():
                 dev.routingSource = args.set
             except ValueError:
                 print(f"Unrecognised input choice {args.set}")
-                print(f"Run -l to list the valid choices")
+                print("Run -l to list the valid choices")
                 sys.exit(1)
         show(dev)
     else:

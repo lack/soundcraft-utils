@@ -24,8 +24,16 @@ import traceback
 from pathlib import Path
 from collections.abc import Iterable
 
-import gi
-
+try:
+    import gi
+except ModuleNotFoundError:
+    print(
+        """
+The PyGI library must be installed from your distribution; usually called
+python-gi, python-gobject, python3-gobject, pygobject, or something similar.
+"""
+    )
+    raise
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib
 from gi.repository import Gtk
@@ -88,7 +96,7 @@ class Main(Gtk.ApplicationWindow):
             self.dbus.ensureServiceVersion()
         except VersionIncompatibilityError:
             self._startupFailure(
-                "Dbus service version incompatibility",
+                "D-Bus service version incompatibility",
                 "Restart of this gui application is required",
             )
             self.app.quit()
