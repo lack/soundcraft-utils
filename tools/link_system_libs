@@ -39,8 +39,13 @@ echo "Found system libpath for $LIB: $LIBPATH"
 
 envpaths=$(libpaths "pipenv run python3")
 for path in $envpaths; do
+    linkpath="$path/$(basename "$LIBPATH")"
+    if test -L "$linkpath" && test "x$(readlink "$linkpath")" = "x$LIBPATH"; then
+	echo "Nothing to do: $linkpath already pointing to $LIBPATH"
+	break
+    fi
     echo "Trying to link $LIB into envpath $path"
-    ln -s "$LIBPATH" "$path"
+    ln -s "$LIBPATH" "$linkpath"
     if [[ $? == 0 ]]; then
         echo "Success"
         break
