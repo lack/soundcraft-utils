@@ -113,6 +113,10 @@ specifications which `soundcraft-utils` comes into contact with.
     The `.desktop` file hooks the `soundcraft_gui` GUI application
     into the desktop environment's list of applications.
 
+  * [Desktop Menu Specification](https://specifications.freedesktop.org/menu-spec/menu-spec-1.0.html)
+
+    Defines e.g. the `Categories=` part of the `.desktop` file.
+
   * [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html)
 
     This specifies the locations the soundcraft-utils Desktop file and
