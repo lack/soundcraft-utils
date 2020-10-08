@@ -150,8 +150,18 @@ def install_dbus():
             time.sleep(1)
             continue  # starting service has failed, but try again
 
-    service_version = bus.get(BUSNAME).version
+    our_service = bus.get(BUSNAME)
+    service_version = our_service.version
     print(f"Service   version: {service_version}")
+
+    print("Shutting down session D-Bus service...")
+    # As the service should either be running at this time or
+    # at the very least be bus activatable, we do not catch
+    # any exceptions while shutting it down because we want to
+    # see any exceptions if they happen.
+    our_service.Shutdown()
+    print("Session D-Bus service has been shut down")
+
     print("D-Bus installation is complete")
     print(f"Run {const.BASE_EXE_GUI} or {const.BASE_EXE_CLI} as a regular user")
 
