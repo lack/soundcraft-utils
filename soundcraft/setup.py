@@ -21,9 +21,9 @@
 # SOFTWARE.
 
 
+import abc
 import argparse
 import shutil
-import subprocess
 import sys
 import time
 from pathlib import Path
@@ -84,12 +84,12 @@ def exePath():
 
 def find_datadir():
     exe_path = exePath()
-    print("exe_path", exe_path)
+    # print("exe_path", exe_path)
     for prefix in [Path("/usr/local"), Path("/usr"), Path("~/.local").expanduser()]:
         for sx_dir in ["bin", "sbin", "libexec"]:
             for sx in [const.BASE_EXE_SETUP]:
                 sx_path = prefix / sx_dir / sx
-                print("sx_path", sx_path)
+                # print("sx_path", sx_path)
                 if sx_path == exe_path:
                     return prefix / "share"
                 try:
@@ -108,9 +108,26 @@ def find_datadir():
     raise ValueError(f"Exe path is not supported: {exe_path!r}")
 
 
-def install_dbus():
-    if True:
-        datadir = find_datadir()
+class AbstractSetup(metaclass=abc.ABCMeta):
+    def __init__(self):
+        self.datadir = find_datadir()
+        # print(f"Using datadir {self.datadir}")
+
+    @abc.abstractmethod
+    def install(self):
+        pass  # AbstractSetup.install()
+
+    @abc.abstractmethod
+    def uninstall(self):
+        pass  # AbstractSetup.uninstall()
+
+
+class SetupDBus(AbstractSetup):
+    def __init__(self):
+        super(SetupDBus, self).__init__()
+        self.service_dst = self.datadir / "dbus-1/services" / f"{BUSNAME}.service"
+
+    def install(self):
         templateData = {
             "dbus_service_bin": str(serviceExePath()),
             "busname": BUSNAME,
@@ -121,14 +138,15 @@ def install_dbus():
             for f in files:
                 src = srcpath / f
                 if src.suffix == ".service":
-                    service_dst = datadir / "dbus-1/services" / f"{BUSNAME}.service"
-                    print("Installing", service_dst)
-                    with open(src, "r") as srcfile:
-                        srcTemplate = Template(srcfile.read())
-                        with open(service_dst, "w") as dstfile:
-                            dstfile.write(srcTemplate.substitute(templateData))
+                    print("Installing", self.service_dst)
+                    self.service_dst.parent.mkdir(
+                        mode=0o755, parents=True, exist_ok=True
+                    )
+                    srcTemplate = Template(src.read_text())
+                    self.service_dst.write_text(srcTemplate.substitute(templateData))
+                    self.service_dst.chmod(mode=0o644)
 
-        print("Starting D-Bus service as a test")
+        print("Starting D-Bus service as a test...")
 
         bus = pydbus.SessionBus()
         dbus_service = bus.get(".DBus")
@@ -166,104 +184,116 @@ def install_dbus():
         print("D-Bus installation is complete")
         print(f"Run {const.BASE_EXE_GUI} or {const.BASE_EXE_CLI} as a regular user")
 
-
-def uninstall_dbus():
-    if True:
-        datadir = find_datadir()
-        service_dst = datadir / "dbus-1/services" / f"{BUSNAME}.service"
-
+    def uninstall(self):
         bus = pydbus.SessionBus()
         dbus_service = bus.get(".DBus")
         if not dbus_service.NameHasOwner(BUSNAME):
-            print("Service not running")
+            print("D-Bus service not running")
         else:
             service = bus.get(BUSNAME)
             service_version = service.version
-            print(f"Shutting down service version {service_version}")
+            print(f"Shutting down D-Bus service version {service_version}")
             service.Shutdown()
-            print("Stopped")
+            print("Session D-Bus service stopped")
 
-        print(f"Removing {service_dst}")
+        print(f"Removing {self.service_dst}")
         try:
-            service_dst.unlink()
+            self.service_dst.unlink()
         except FileNotFoundError:
-            pass  # no service file to remove
+            pass  # No service file to remove
 
         print("D-Bus service is unregistered")
 
 
-def install_xdg():
-    if True:
-        datadir = find_datadir()
-        print("Using datadir", datadir)
+class SetupXDGDesktop(AbstractSetup):
+
+    # FIXME05: Find out whether `xdg-desktop-menu` and `xdg-desktop-icon`
+    #          must be run after all. Fedora Packaging docs suggest so.
+
+    def install(self):
         sources = findDataFiles("xdg")
         for (srcpath, files) in sources.items():
             for f in files:
                 src = srcpath / f
                 if src.suffix == ".desktop":
-                    subprocess.run(
-                        ["xdg-desktop-menu", "install", "--novendor", str(src)]
-                    )
+                    application_dir = self.datadir / "applications"
+                    dst = application_dir / f"{const.APP_ICON}.desktop"
+                    templateData = {
+                        "gui_bin": exePath().parent / const.BASE_EXE_GUI,
+                        "APP_ICON": const.APP_ICON,
+                    }
+                    srcTemplate = Template(src.read_text())
+                    print("Installing", dst)
+                    dst.parent.mkdir(mode=0o755, parents=True, exist_ok=True)
+                    dst.write_text(srcTemplate.substitute(templateData))
+                    dst.chmod(mode=0o644)
                 elif src.suffix == ".png":
-                    for size in (16, 24, 32, 48, 256):
-                        subprocess.run(
-                            [
-                                "xdg-icon-resource",
-                                "install",
-                                "--novendor",
-                                "--size",
-                                str(size),
-                                str(src),
-                            ]
-                        )
+                    size = 256  # The only PNG file at this time is 256x256
+                    dst = self.icondir(size) / f"{const.APP_ICON}.png"
+                    print("Installing", dst)
+                    dst.parent.mkdir(mode=0o755, parents=True, exist_ok=True)
+                    shutil.copy(src, dst)
+                    dst.chmod(mode=0o644)
                 elif src.suffix == ".svg":
-                    scalable_icondir = datadir / "icons/hicolor/scalable/apps"
-                    scalable_icondir.mkdir(parents=True, exist_ok=True)
-                    shutil.copy(src, scalable_icondir)
+                    dst = self.icondir() / f"{const.APP_ICON}.svg"
+                    print("Installing", dst)
+                    dst.parent.mkdir(mode=0o755, parents=True, exist_ok=True)
+                    shutil.copy(src, dst)
+                    dst.chmod(mode=0o644)
         print("Installed all XDG application launcher files")
 
-
-def uninstall_xdg():
-    if True:
-        datadir = find_datadir()
-        print("Using datadir", datadir)
+    def uninstall(self):
         sources = findDataFiles("xdg")
         for (srcpath, files) in sources.items():
             for f in files:
-                print(f"Uninstalling {f.name}")
-                if f.suffix == ".desktop":
-                    subprocess.run(
-                        ["xdg-desktop-menu", "uninstall", "--novendor", f.name]
-                    )
-                elif f.suffix == ".png":
-                    for size in (16, 24, 32, 48, 256):
-                        subprocess.run(
-                            [
-                                "xdg-icon-resource",
-                                "uninstall",
-                                "--size",
-                                str(size),
-                                f.name,
-                            ]
-                        )
-                elif f.suffix == ".svg":
-                    scalable_icondir = datadir / "icons/hicolor/scalable/apps"
-                    svg = scalable_icondir / f.name
+                src = srcpath / f
+                if src.suffix == ".desktop":
+                    application_dir = self.datadir / "applications"
+                    dst = application_dir / f"{const.APP_ICON}.desktop"
+                    print(f"Uninstalling {dst}")
                     try:
-                        svg.unlink()
+                        dst.unlink()
                     except FileNotFoundError:
-                        pass  # svg file not found
+                        pass  # No dst file to remove
+                elif src.suffix == ".png":
+                    size = 256  # The only PNG file at this time is 256x256
+                    dst = self.icondir(size) / f"{const.APP_ICON}.png"
+                    print(f"Uninstalling {dst}")
+                    try:
+                        dst.unlink()
+                    except FileNotFoundError:
+                        pass  # No dst file to remove
+                elif src.suffix == ".svg":
+                    dst = self.icondir() / f"{const.APP_ICON}.svg"
+                    print(f"Uninstalling {dst}")
+                    try:
+                        dst.unlink()
+                    except FileNotFoundError:
+                        pass  # No dst file to remove
         print("Removed all XDG application launcher files")
 
+    def icondir(self, size=None):
+        if size is None:
+            return self.datadir / "icons/hicolor/scalable/apps"
+        else:
+            return self.datadir / f"icons/hicolor/{size}x{size}/apps"
 
-def install():
-    install_dbus()
-    install_xdg()
 
+class SetupEverything(AbstractSetup):
+    def __init__(self):
+        super(SetupEverything, self).__init__()
+        self.everything = []
 
-def uninstall():
-    uninstall_dbus()
-    uninstall_xdg()
+    def add(self, thing):
+        self.everything.append(thing)
+
+    def install(self):
+        for thing in self.everything:
+            thing.install()
+
+    def uninstall(self):
+        for thing in reversed(self.everything):
+            thing.uninstall()
 
 
 def main():
@@ -289,7 +319,12 @@ def main():
     )
 
     args = parser.parse_args()
+
+    everything = SetupEverything()
+    everything.add(SetupDBus())
+    everything.add(SetupXDGDesktop())
+
     if args.install:
-        install()
+        everything.install()
     elif args.uninstall:
-        uninstall()
+        everything.uninstall()
