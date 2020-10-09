@@ -109,89 +109,93 @@ def find_datadir():
 
 
 def install_dbus():
-    datadir = find_datadir()
-    templateData = {
-        "dbus_service_bin": str(serviceExePath()),
-        "busname": BUSNAME,
-    }
+    if True:
+        datadir = find_datadir()
+        templateData = {
+            "dbus_service_bin": str(serviceExePath()),
+            "busname": BUSNAME,
+        }
 
-    sources = findDataFiles("dbus-1")
-    for (srcpath, files) in sources.items():
-        for f in files:
-            src = srcpath / f
-            if src.suffix == ".service":
-                service_dst = datadir / "dbus-1/services" / f"{BUSNAME}.service"
-                print("Installing", service_dst)
-                with open(src, "r") as srcfile:
-                    srcTemplate = Template(srcfile.read())
-                    with open(service_dst, "w") as dstfile:
-                        dstfile.write(srcTemplate.substitute(templateData))
+        sources = findDataFiles("dbus-1")
+        for (srcpath, files) in sources.items():
+            for f in files:
+                src = srcpath / f
+                if src.suffix == ".service":
+                    service_dst = datadir / "dbus-1/services" / f"{BUSNAME}.service"
+                    print("Installing", service_dst)
+                    with open(src, "r") as srcfile:
+                        srcTemplate = Template(srcfile.read())
+                        with open(service_dst, "w") as dstfile:
+                            dstfile.write(srcTemplate.substitute(templateData))
 
-    print("Starting D-Bus service as a test")
+        print("Starting D-Bus service as a test")
 
-    bus = pydbus.SessionBus()
-    dbus_service = bus.get(".DBus")
-    print(f"Installer version: {soundcraft.__version__}")
+        bus = pydbus.SessionBus()
+        dbus_service = bus.get(".DBus")
+        print(f"Installer version: {soundcraft.__version__}")
 
-    # Give the D-Bus a few seconds to notice the new service file
-    timeout = 5
-    while True:
-        try:
-            dbus_service.StartServiceByName(BUSNAME, 0)
-            break  # service has been started, no need to try again
-        except GLibError:
-            # If the bus has not recognized the service config file
-            # yet, the service is not bus activatable yet and thus the
-            # GLibError will happen.
-            if timeout == 0:
-                raise
-            timeout = timeout - 1
+        # Give the D-Bus a few seconds to notice the new service file
+        timeout = 5
+        while True:
+            try:
+                dbus_service.StartServiceByName(BUSNAME, 0)
+                break  # service has been started, no need to try again
+            except GLibError:
+                # If the bus has not recognized the service config file
+                # yet, the service is not bus activatable yet and thus the
+                # GLibError will happen.
+                if timeout == 0:
+                    raise
+                timeout = timeout - 1
 
-            time.sleep(1)
-            continue  # starting service has failed, but try again
+                time.sleep(1)
+                continue  # starting service has failed, but try again
 
-    our_service = bus.get(BUSNAME)
-    service_version = our_service.version
-    print(f"Service   version: {service_version}")
+        our_service = bus.get(BUSNAME)
+        service_version = our_service.version
+        print(f"Service   version: {service_version}")
 
-    print("Shutting down session D-Bus service...")
-    # As the service should either be running at this time or
-    # at the very least be bus activatable, we do not catch
-    # any exceptions while shutting it down because we want to
-    # see any exceptions if they happen.
-    our_service.Shutdown()
-    print("Session D-Bus service has been shut down")
+        print("Shutting down session D-Bus service...")
+        # As the service should either be running at this time or
+        # at the very least be bus activatable, we do not catch
+        # any exceptions while shutting it down because we want to
+        # see any exceptions if they happen.
+        our_service.Shutdown()
+        print("Session D-Bus service has been shut down")
 
-    print("D-Bus installation is complete")
-    print(f"Run {const.BASE_EXE_GUI} or {const.BASE_EXE_CLI} as a regular user")
+        print("D-Bus installation is complete")
+        print(f"Run {const.BASE_EXE_GUI} or {const.BASE_EXE_CLI} as a regular user")
 
 
 def install_xdg():
-    datadir = find_datadir()
-    print("Using datadir", datadir)
-    sources = findDataFiles("xdg")
-    for (srcpath, files) in sources.items():
-        for f in files:
-            src = srcpath / f
-            if src.suffix == ".desktop":
-                subprocess.run(["xdg-desktop-menu", "install", "--novendor", str(src)])
-            elif src.suffix == ".png":
-                for size in (16, 24, 32, 48, 256):
+    if True:
+        datadir = find_datadir()
+        print("Using datadir", datadir)
+        sources = findDataFiles("xdg")
+        for (srcpath, files) in sources.items():
+            for f in files:
+                src = srcpath / f
+                if src.suffix == ".desktop":
                     subprocess.run(
-                        [
-                            "xdg-icon-resource",
-                            "install",
-                            "--novendor",
-                            "--size",
-                            str(size),
-                            str(src),
-                        ]
+                        ["xdg-desktop-menu", "install", "--novendor", str(src)]
                     )
-            elif src.suffix == ".svg":
-                scalable_icondir = datadir / "icons/hicolor/scalable/apps"
-                scalable_icondir.mkdir(parents=True, exist_ok=True)
-                shutil.copy(src, scalable_icondir)
-    print("Installed all XDG application launcher files")
+                elif src.suffix == ".png":
+                    for size in (16, 24, 32, 48, 256):
+                        subprocess.run(
+                            [
+                                "xdg-icon-resource",
+                                "install",
+                                "--novendor",
+                                "--size",
+                                str(size),
+                                str(src),
+                            ]
+                        )
+                elif src.suffix == ".svg":
+                    scalable_icondir = datadir / "icons/hicolor/scalable/apps"
+                    scalable_icondir.mkdir(parents=True, exist_ok=True)
+                    shutil.copy(src, scalable_icondir)
+        print("Installed all XDG application launcher files")
 
 
 def install():
@@ -200,51 +204,61 @@ def install():
 
 
 def uninstall_dbus():
-    datadir = find_datadir()
-    service_dst = datadir / "dbus-1/services" / f"{BUSNAME}.service"
+    if True:
+        datadir = find_datadir()
+        service_dst = datadir / "dbus-1/services" / f"{BUSNAME}.service"
 
-    bus = pydbus.SessionBus()
-    dbus_service = bus.get(".DBus")
-    if not dbus_service.NameHasOwner(BUSNAME):
-        print("Service not running")
-    else:
-        service = bus.get(BUSNAME)
-        service_version = service.version
-        print(f"Shutting down service version {service_version}")
-        service.Shutdown()
-        print("Stopped")
+        bus = pydbus.SessionBus()
+        dbus_service = bus.get(".DBus")
+        if not dbus_service.NameHasOwner(BUSNAME):
+            print("Service not running")
+        else:
+            service = bus.get(BUSNAME)
+            service_version = service.version
+            print(f"Shutting down service version {service_version}")
+            service.Shutdown()
+            print("Stopped")
 
-    print(f"Removing {service_dst}")
-    try:
-        service_dst.unlink()
-    except FileNotFoundError:
-        pass  # no service file to remove
+        print(f"Removing {service_dst}")
+        try:
+            service_dst.unlink()
+        except FileNotFoundError:
+            pass  # no service file to remove
 
-    print("D-Bus service is unregistered")
+        print("D-Bus service is unregistered")
 
 
 def uninstall_xdg():
-    datadir = find_datadir()
-    print("Using datadir", datadir)
-    sources = findDataFiles("xdg")
-    for (srcpath, files) in sources.items():
-        for f in files:
-            print(f"Uninstalling {f.name}")
-            if f.suffix == ".desktop":
-                subprocess.run(["xdg-desktop-menu", "uninstall", "--novendor", f.name])
-            elif f.suffix == ".png":
-                for size in (16, 24, 32, 48, 256):
+    if True:
+        datadir = find_datadir()
+        print("Using datadir", datadir)
+        sources = findDataFiles("xdg")
+        for (srcpath, files) in sources.items():
+            for f in files:
+                print(f"Uninstalling {f.name}")
+                if f.suffix == ".desktop":
                     subprocess.run(
-                        ["xdg-icon-resource", "uninstall", "--size", str(size), f.name]
+                        ["xdg-desktop-menu", "uninstall", "--novendor", f.name]
                     )
-            elif f.suffix == ".svg":
-                scalable_icondir = datadir / "icons/hicolor/scalable/apps"
-                svg = scalable_icondir / f.name
-                try:
-                    svg.unlink()
-                except FileNotFoundError:
-                    pass  # svg file not found
-    print("Removed all XDG application launcher files")
+                elif f.suffix == ".png":
+                    for size in (16, 24, 32, 48, 256):
+                        subprocess.run(
+                            [
+                                "xdg-icon-resource",
+                                "uninstall",
+                                "--size",
+                                str(size),
+                                f.name,
+                            ]
+                        )
+                elif f.suffix == ".svg":
+                    scalable_icondir = datadir / "icons/hicolor/scalable/apps"
+                    svg = scalable_icondir / f.name
+                    try:
+                        svg.unlink()
+                    except FileNotFoundError:
+                        pass  # svg file not found
+        print("Removed all XDG application launcher files")
 
 
 def uninstall():
