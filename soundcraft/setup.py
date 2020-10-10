@@ -70,6 +70,10 @@ def findDataFiles(subdir):
 
 
 def serviceExePath():
+    return exePath().parent / const.BASE_EXE_SERVICE
+
+
+def exePath():
     exename = Path(sys.argv[0]).resolve()
     if exename.suffix == ".py":
         raise ValueError(
@@ -79,11 +83,13 @@ def serviceExePath():
 
 
 def find_datadir():
-    exe_path = serviceExePath()
+    exe_path = exePath()
+    print("exe_path", exe_path)
     for prefix in [Path("/usr/local"), Path("/usr"), Path("~/.local").expanduser()]:
         for sx_dir in ["bin", "sbin", "libexec"]:
             for sx in [const.BASE_EXE_SETUP]:
                 sx_path = prefix / sx_dir / sx
+                print("sx_path", sx_path)
                 if sx_path == exe_path:
                     return prefix / "share"
                 try:
@@ -99,26 +105,27 @@ def find_datadir():
                     return prefix / "share"
                 except ValueError:
                     pass  # exe_path is not a subdir of prefix
-    raise ValueError(f"Service exe path is not supported: {exe_path!r}")
+    raise ValueError(f"Exe path is not supported: {exe_path!r}")
 
 
 def install_dbus():
-    dbus1_root = find_datadir() / "dbus-1"
-    print(f"Using dbus-1 config root {dbus1_root}")
+    datadir = find_datadir()
     templateData = {
         "dbus_service_bin": str(serviceExePath()),
         "busname": BUSNAME,
     }
+
     sources = findDataFiles("dbus-1")
     for (srcpath, files) in sources.items():
         for f in files:
             src = srcpath / f
-            dst = dbus1_root / f
-            print(f"Installing {src} -> {dst}")
-            with open(src, "r") as srcfile:
-                srcTemplate = Template(srcfile.read())
-                with open(dst, "w") as dstfile:
-                    dstfile.write(srcTemplate.substitute(templateData))
+            if src.suffix == ".service":
+                service_dst = datadir / "dbus-1/services" / f"{BUSNAME}.service"
+                print("Installing", service_dst)
+                with open(src, "r") as srcfile:
+                    srcTemplate = Template(srcfile.read())
+                    with open(service_dst, "w") as dstfile:
+                        dstfile.write(srcTemplate.substitute(templateData))
 
     bus = pydbus.SessionBus()
     dbus_service = bus.get(".DBus")
@@ -181,8 +188,9 @@ def install():
 
 
 def uninstall_dbus():
-    dbus1_root = find_datadir() / "dbus-1"
-    print(f"Using dbus-1 config root {dbus1_root}")
+    datadir = find_datadir()
+    service_dst = datadir / "dbus-1/services" / f"{BUSNAME}.service"
+
     bus = pydbus.SessionBus()
     dbus_service = bus.get(".DBus")
     if not dbus_service.NameHasOwner(BUSNAME):
@@ -194,15 +202,12 @@ def uninstall_dbus():
         service.Shutdown()
         print("Stopped")
 
-    sources = findDataFiles("dbus-1")
-    for (srcpath, files) in sources.items():
-        for f in files:
-            path = dbus1_root / f
-            print(f"Removing {path}")
-            try:
-                path.unlink()
-            except Exception as e:
-                print(e)
+    print(f"Removing {service_dst}")
+    try:
+        service_dst.unlink()
+    except FileNotFoundError:
+        pass  # no service file to remove
+
     print("D-Bus service is unregistered")
 
 
