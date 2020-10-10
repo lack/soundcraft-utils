@@ -1,5 +1,3 @@
 [D-BUS Service]
 Name=$busname
 Exec=$dbus_service_bin
-User=root
-

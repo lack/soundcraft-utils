@@ -1,5 +1,6 @@
 #
 # Copyright (c) 2020 Jim Ramsay <i.am@jimramsay.com>
+# Copyright (c) 2020 Hans Ulrich Niedermann <hun@n-dimensional.de>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +34,7 @@ python-gi, python-gobject, python3-gobject, pygobject, or something similar.
     raise
 gi.require_version("GUdev", "1.0")
 from gi.repository import GLib, GUdev
-from pydbus import SystemBus
+from pydbus import SessionBus
 from pydbus.generic import signal
 
 import soundcraft
@@ -122,7 +123,7 @@ class Service:
 
     def __init__(self):
         self.object = None
-        self.bus = SystemBus()
+        self.bus = SessionBus()
         self.udev = GUdev.Client(subsystems=["usb/usb_device"])
         self.udev.connect("uevent", self.uevent)
         self.loop = GLib.MainLoop()
@@ -170,7 +171,7 @@ class Service:
         self.object._wrapped = wrapped
         self.object._path = path
         print(
-            f"Presenting {self.object._wrapped._dev.name} on the system bus as {path}"
+            f"Presenting {self.object._wrapped._dev.name} on the session bus as {path}"
         )
         self.Added(path)
         self.PropertiesChanged(self.InterfaceName, {"devices": self.devices}, [])
@@ -183,7 +184,7 @@ class Service:
             return
         path = self.object._path
         print(
-            f"Removed {self.object._wrapped._dev.name} AKA {path} from the system bus"
+            f"Removed {self.object._wrapped._dev.name} AKA {path} from the session bus"
         )
         self.object.unregister()
         self.object = None
@@ -226,7 +227,7 @@ class VersionIncompatibilityError(DbusInitializationError):
 class DbusServiceSetupError(DbusInitializationError):
     def __init__(self):
         super().__init__(
-            f"No D-Bus service found for {BUSNAME} - Run '{const.BASE_EXE_SERVICE} --setup' as root to enable it"
+            f"No D-Bus service found for {BUSNAME}. Maybe run '{const.BASE_EXE_SETUP} --install' to enable it?"
         )
 
 
@@ -234,7 +235,7 @@ class Client:
     MGRPATH = "/soundcraft/utils/notepad"
 
     def __init__(self, added_cb=None, removed_cb=None):
-        self.bus = SystemBus()
+        self.bus = SessionBus()
         self.dbusmgr = self.bus.get(".DBus")
         self.dbusmgr.onNameOwnerChanged = self._nameChanged
         self.manager = None
@@ -331,7 +332,7 @@ class Client:
         self.deviceRemoved(path)
 
 
-def main():
+def service_main():
     parser = argparse.ArgumentParser(description=f"The {const.PACKAGE} D-Bus service.")
     parser.add_argument(
         "--version",

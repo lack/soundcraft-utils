@@ -1,6 +1,6 @@
 #!/bin/sh
 
-busctl="busctl"
+busctl="busctl --user"
 
 busname="soundcraft.utils.notepad"
 devinterface="soundcraft.utils.notepad.device"
@@ -9,9 +9,9 @@ devpath="/soundcraft/utils/notepad/0"
 set -xe
 
 # Start the soundcraft-utils D-Bus service via bus activation on the
-# system bus.
+# session bus.
 
-# dbus-send --system --print-reply --dest=org.freedesktop.DBus \
+# dbus-send --session --print-reply --dest=org.freedesktop.DBus \
 #	  /org/freedesktop/DBus org.freedesktop.DBus.StartServiceByName \
 #	  "string:${busname}" uint32:0
 
@@ -24,7 +24,7 @@ ${busctl} call org.freedesktop.DBus /org/freedesktop/DBus \
 sleep 2
 
 # See what objects the soundcraft-utils D-Bus service exposes on the
-# system bus.
+# session bus.
 
 ${busctl} tree "${busname}"
 ${busctl} --no-pager introspect "${busname}" "$devpath"

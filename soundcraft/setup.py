@@ -120,7 +120,7 @@ def install_dbus():
                 with open(dst, "w") as dstfile:
                     dstfile.write(srcTemplate.substitute(templateData))
 
-    bus = pydbus.SystemBus()
+    bus = pydbus.SessionBus()
     dbus_service = bus.get(".DBus")
     print(f"Starting service version {soundcraft.__version__}...")
 
@@ -183,7 +183,7 @@ def install():
 def uninstall_dbus():
     dbus1_root = find_datadir() / "dbus-1"
     print(f"Using dbus-1 config root {dbus1_root}")
-    bus = pydbus.SystemBus()
+    bus = pydbus.SessionBus()
     dbus_service = bus.get(".DBus")
     if not dbus_service.NameHasOwner(BUSNAME):
         print("Service not running")
