@@ -93,6 +93,10 @@ soundcraft-utils are available in [AUR](https://aur.archlinux.org/packages/sound
 yay -S soundcraft-utils
 ```
 
+#### NixOS
+For NixOS there exists an experimental
+[Nix expression](https://github.com/pakettiale/soundcraft-utils-nixos).
+For instructions, check out the repo.
 
 Usage
 -----
