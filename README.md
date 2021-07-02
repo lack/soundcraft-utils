@@ -1,3 +1,21 @@
+Project Moving!
+===============
+
+We're moving and renaming!
+
+All future development will be done at [socratools/socranop](https://github.com/socratools/socranop)
+
+- **SO**und**CRA**ft **TOOLS** -> socratools (the GitHub org that manages the new repo)
+- **SO**und**CRA**ft **NO**te**P**ad -> socranop (this same utility, renamed and embiggened by new features)
+
+### Why the rename?
+
+Well, "Soundcraft" is a registered trade mark, and it's also polite to not brand your own product with someone else's name.
+
+Also, "socratools" sounds like "Socrates" and "socranop" is just objectively awesome.
+
+---
+
 Linux Utilities for Soundcraft Mixers
 =====================================
 
